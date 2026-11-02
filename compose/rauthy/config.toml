@@ -1,0 +1,42 @@
+# Rauthy for the local compose setup only: plain HTTP on id.localhost behind the proxy and fixed secrets that are
+# public in this repo. Never use it for anything reachable from elsewhere.
+
+[access]
+cookie_mode = 'danger-insecure'
+# a browser client here renews before the refresh token's nbf, Rauthy refused it every 5s
+disable_refresh_token_nbf = true
+
+[bootstrap]
+admin_email = 'admin@localhost'
+password_plain = 'demo'
+bootstrap_dir = '/app/bootstrap'
+
+[cluster]
+node_id = 1
+nodes = ['1 localhost:8100 localhost:8200']
+secret_raft = 'local-compose-raft-secret'
+secret_api = 'local-compose-api-secret'
+
+[dynamic_clients]
+enable = true
+# MCP clients register themselves and must ask for this server as their resource; the second is
+# the server run from source beside the demo
+allowed_resources = ['http://mcp.localhost/mcp', 'http://mcp.localhost:9202/mcp']
+# a demo registers again after every reset, and its client may wait long for the first sign-in
+rate_limit_reg = '1s'
+cleanup_threshold = '8760h'
+
+[encryption]
+keys = ['local/bG9jYWwtY29tcG9zZS1lbmNyeXB0aW9uLWtleS0zMmI=']
+key_active = 'local'
+
+[server]
+scheme = 'http'
+port_http = 9201
+pub_url = 'id.localhost'
+metrics_enable = false
+
+[webauthn]
+rp_id = 'id.localhost'
+# Rauthy takes no origin without its port
+rp_origin = 'http://id.localhost:80'

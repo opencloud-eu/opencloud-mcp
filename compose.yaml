@@ -1,0 +1,266 @@
+# local use only: plain HTTP, public secrets; the *.localhost names are the proxy's aliases in here
+# and 127.0.0.1 outside, so the browser and the containers reach the same URLs
+name: opencloud-mcp
+
+services:
+  proxy:
+    image: caddy:2.11.7-alpine
+    volumes:
+      - ./compose/proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+    ports:
+      - 127.0.0.1:80:80
+    networks:
+      default:
+        aliases: [cloud.localhost, id.localhost, mcp.localhost, collabora.localhost]
+
+  rauthy:
+    image: ghcr.io/sebadob/rauthy:0.37.2
+    volumes:
+      - ./compose/rauthy/config.toml:/app/config.toml:ro
+      - ./compose/rauthy/bootstrap:/app/bootstrap:ro
+      - rauthy-data:/app/data
+
+  # Rauthy's bootstrap files cannot name the resources a client may exchange a token for
+  rauthy-setup:
+    image: curlimages/curl:8.23.0
+    entrypoint: ["/bin/sh", "/setup.sh"]
+    volumes:
+      - ./compose/rauthy/setup.sh:/setup.sh:ro
+    depends_on: [rauthy]
+    restart: on-failure
+
+  opencloud:
+    image: opencloudeu/opencloud-rolling:9.0.0
+    entrypoint: ["/bin/sh"]
+    command: ["-c", "opencloud init || true; sh /etc/opencloud-demo/seed.sh & exec opencloud server"]
+    environment:
+      OC_URL: http://cloud.localhost
+      PROXY_TLS: "false"
+      OC_INSECURE: "true"
+      OC_LOG_LEVEL: info
+      IDM_ADMIN_PASSWORD: demo
+      OC_EXCLUDE_RUN_SERVICES: idp
+      OC_OIDC_ISSUER: http://id.localhost/auth/v1/
+      PROXY_OIDC_REWRITE_WELLKNOWN: "true"
+      PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD: jwt
+      PROXY_OIDC_AUDIENCES: web,http://cloud.localhost
+      WEB_OIDC_CLIENT_ID: web
+      WEB_OIDC_SCOPE: openid profile email groups
+      PROXY_AUTOPROVISION_ACCOUNTS: "true"
+      PROXY_USER_OIDC_CLAIM: preferred_username
+      PROXY_USER_CS3_CLAIM: username
+      PROXY_AUTOPROVISION_CLAIM_USERNAME: preferred_username
+      PROXY_ROLE_ASSIGNMENT_DRIVER: default
+      GRAPH_ASSIGN_DEFAULT_USER_ROLE: "true"
+      GRAPH_USERNAME_MATCH: none
+      PROXY_ENABLE_APP_AUTH: "true"
+      SEARCH_EXTRACTOR_TYPE: tika
+      SEARCH_EXTRACTOR_TIKA_TIKA_URL: http://tika:9998
+      FRONTEND_FULL_TEXT_SEARCH_ENABLED: "true"
+      # after github.com/opencloud-eu/opencloud-compose weboffice/collabora.yml
+      OC_ADD_RUN_SERVICES: collaboration
+      COLLABORATION_WOPI_SRC: http://cloud.localhost
+      COLLABORATION_APP_NAME: CollaboraOnline
+      COLLABORATION_APP_PRODUCT: Collabora
+      COLLABORATION_APP_ADDR: http://collabora.localhost
+      COLLABORATION_APP_ICON: http://collabora.localhost/favicon.ico
+      COLLABORATION_APP_INSECURE: "true"
+      COLLABORATION_CS3API_DATAGATEWAY_INSECURE: "true"
+      PROXY_CSP_CONFIG_FILE_LOCATION: /etc/opencloud-demo/csp.yaml
+    volumes:
+      - ./compose/opencloud/csp.yaml:/etc/opencloud-demo/csp.yaml:ro
+      - ./compose/opencloud/seed.sh:/etc/opencloud-demo/seed.sh:ro
+      - opencloud-config:/etc/opencloud
+      - opencloud-data:/var/lib/opencloud
+    depends_on:
+      rauthy:
+        condition: service_started
+      proxy:
+        condition: service_started
+      tika:
+        condition: service_healthy
+      collabora:
+        condition: service_started
+
+  # after github.com/opencloud-eu/opencloud-compose search/tika.yml
+  tika:
+    image: apache/tika:4.2.0-1
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9998 && printf 'GET /tika HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep '200 OK' <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  # OpenCloud refuses a WOPI request without a proof, and Collabora signs only with a key
+  collabora-proof-key:
+    image: alpine/openssl:3.5.9
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        if [ ! -s /proof/proof_key ]; then
+          openssl genrsa -traditional -out /proof/proof_key.tmp 4096
+          chown 1001:1001 /proof/proof_key.tmp
+          chmod 400 /proof/proof_key.tmp
+          mv /proof/proof_key.tmp /proof/proof_key
+        fi
+    volumes:
+      - collabora-proof-key:/proof
+
+  collabora:
+    image: collabora/code:26.04.5.2.1
+    environment:
+      aliasgroup1: http://cloud.localhost
+      extra_params: >
+        --o:ssl.enable=false
+        --o:ssl.termination=false
+        --o:welcome.enable=false
+        --o:net.frame_ancestors=cloud.localhost
+        --o:net.lok_allow.host[14]=cloud.localhost
+        --o:home_mode.enable=true
+      username: admin
+      password: demo
+    cap_add: [SYS_ADMIN]
+    security_opt: [seccomp=unconfined, apparmor:unconfined]
+    volumes:
+      - type: volume
+        source: collabora-proof-key
+        target: /etc/coolwsd/proof_key
+        read_only: true
+        volume:
+          subpath: proof_key
+    depends_on:
+      collabora-proof-key:
+        condition: service_completed_successfully
+
+  app-tokens:
+    image: curlimages/curl:8.23.0
+    user: root
+    entrypoint: ["/bin/sh", "/app-tokens.sh"]
+    volumes:
+      - ./compose/opencloud/app-tokens.sh:/app-tokens.sh:ro
+      - app-tokens:/tokens
+    depends_on:
+      rauthy-setup:
+        condition: service_completed_successfully
+      opencloud:
+        condition: service_started
+    restart: on-failure
+
+  mcp:
+    build: .
+    environment:
+      OPENCLOUD_URL: http://cloud.localhost
+      OPENCLOUD_MCP_LISTEN: :9202
+      OPENCLOUD_MCP_OIDC_ISSUER: http://id.localhost/auth/v1/
+      OPENCLOUD_MCP_RESOURCE: http://mcp.localhost/mcp
+      OPENCLOUD_MCP_OIDC_CLIENT_ID: opencloud-mcp
+      OPENCLOUD_MCP_OIDC_CLIENT_SECRET: local-compose-opencloud-mcp-client-secret-that-is-64-characters-
+    depends_on:
+      proxy:
+        condition: service_started
+      rauthy-setup:
+        condition: service_completed_successfully
+      opencloud:
+        condition: service_started
+    restart: on-failure
+
+  chat:
+    image: registry.librechat.ai/librechat-ai/librechat:v0.8.8
+    environment:
+      <<: &librechat
+        HOST: 0.0.0.0
+        PORT: "9203"
+        # Rauthy takes a plain http redirect from a dynamic client only for localhost itself, so
+        # LibreChat has no *.localhost name
+        DOMAIN_CLIENT: http://localhost
+        DOMAIN_SERVER: http://localhost
+        MONGO_URI: mongodb://chat-db:27017/LibreChat
+        JWT_SECRET: local-compose-librechat-jwt-secret
+        JWT_REFRESH_SECRET: local-compose-librechat-jwt-refresh-secret
+        CREDS_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+        CREDS_IV: 0123456789abcdef0123456789abcdef
+        ENDPOINTS: custom
+        SEARCH: "false"
+        ALLOW_REGISTRATION: "false"
+        MIN_PASSWORD_LENGTH: "4"
+        # one container, so its scheduler needs no shared store
+        SCHEDULES_SINGLE_PROCESS: "true"
+        METRICS_SECRET: local-compose-librechat-metrics-secret
+      # the config's inputs once more: compose recreates chat for a changed environment, not for a
+      # changed config; own names, LibreChat reads OPENAI_API_KEY itself
+      DEMO_API_BASE_URL: ${OPENAI_API_BASE_URL:-}
+      DEMO_API_KEY: ${OPENAI_API_KEY:-}
+      DEMO_API_HEADERS: ${OPENAI_API_HEADERS:-}
+      DEMO_MODELS: ${DEFAULT_MODELS:-}
+    configs:
+      - source: librechat
+        target: /app/librechat.yaml
+    depends_on: [chat-db, mcp, proxy]
+
+  chat-db:
+    image: mongo:8.0.20
+    command: mongod --noauth --quiet
+    volumes:
+      - chat-db:/data/db
+
+  # waits for chat to set the database up, or it warns about the credentials on every start
+  chat-user:
+    image: registry.librechat.ai/librechat-ai/librechat:v0.8.8
+    environment: *librechat
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        until wget -q -O /dev/null http://chat:9203/health; do sleep 1; done
+        out=$$(npm run --silent create-user -- alice@example.com alice alice demo --email-verified=true 2>&1)
+        case "$$out" in
+          *"created successfully"*) echo "alice@example.com is made" ;;
+          *"already exists"*) echo "alice@example.com is there already" ;;
+          *) echo "$$out"; exit 1 ;;
+        esac
+    depends_on: [chat]
+    restart: on-failure
+
+volumes:
+  rauthy-data:
+  opencloud-config:
+  opencloud-data:
+  chat-db:
+  app-tokens:
+  collabora-proof-key:
+
+configs:
+  # compose puts the model API from the shell or its env file in; LibreChat itself would not
+  librechat:
+    content: |
+      version: 1.3.17
+      cache: true
+      mcpSettings:
+        # both are private addresses, which LibreChat refuses by default
+        allowedAddresses: ['mcp.localhost:80', 'id.localhost:80']
+      mcpServers:
+        opencloud:
+          type: streamable-http
+          url: http://mcp.localhost/mcp
+          requiresOAuth: true
+      modelSpecs:
+        addedEndpoints: [custom]
+        list:
+          - name: opencloud
+            label: OpenCloud
+            description: a chat with the opencloud MCP server selected
+            default: true
+            mcpServers: [opencloud]
+            preset:
+              endpoint: Demo
+      endpoints:
+        custom:
+          - name: Demo
+            apiKey: '${OPENAI_API_KEY:-}'
+            baseURL: '${OPENAI_API_BASE_URL:-https://api.openai.com/v1}'
+            headers: ${OPENAI_API_HEADERS:-{}}
+            models:
+              # listed even when the API's /models names none, as a gateway's wildcard route does
+              default: [${DEFAULT_MODELS:-}]
+              fetch: true
+            titleConvo: false

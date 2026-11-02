@@ -1,0 +1,46 @@
+[tools]
+go = "1.27.3"
+golangci-lint = "2.15.0"
+
+[tasks.build]
+description = "the opencloud-mcp binary in bin/"
+run = "go build -trimpath -o bin/opencloud-mcp ./cmd/opencloud-mcp"
+
+[tasks.test]
+description = "the unit tests against the in-repo fake OpenCloud, and the live test, which skips without a local OpenCloud"
+run = "go test -race ./..."
+
+[tasks."test:live"]
+description = "the tests with the live test against the compose demo, as alice with bob as the second user"
+run = '''
+eval "$(docker compose logs --no-log-prefix app-tokens | grep '^export ' | tail -n 2)"
+go test -race -count=1 ./...
+'''
+
+[tasks.demo]
+description = "the demo at http://localhost in the foreground, Ctrl-C stops it: OpenCloud, Rauthy, Collabora, Tika, this server and LibreChat"
+run = "docker compose up --build"
+
+[tasks."demo:tokens"]
+description = "alice's and bob's app tokens as shell exports"
+run = "docker compose logs --no-log-prefix app-tokens | grep '^export ' | tail -n 2"
+
+[tasks."demo:reset"]
+description = "the demo down, its data and its image of this server deleted, for a start from scratch"
+run = "docker compose down --remove-orphans --volumes --rmi local"
+
+[tasks.lint]
+description = "go vet and golangci-lint"
+run = ["go vet ./...", "golangci-lint run ./..."]
+
+[tasks.image]
+description = "the container image opencloud-mcp:dev"
+run = "docker build -t opencloud-mcp:dev ."
+
+[tasks.run]
+description = "the server on stdio, configured by OPENCLOUD_URL, OPENCLOUD_USER and OPENCLOUD_APP_TOKEN"
+run = "go run ./cmd/opencloud-mcp"
+
+[tasks.kql]
+description = "OpenCloud's search parity report into internal/kql, for the OpenCloud version in internal/kql/version"
+run = 'curl -fsSL "https://raw.githubusercontent.com/opencloud-eu/opencloud/v$(cat internal/kql/version)/services/search/pkg/parity/README.md" -o internal/kql/parity.md'

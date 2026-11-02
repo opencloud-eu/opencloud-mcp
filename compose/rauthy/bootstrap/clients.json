@@ -1,0 +1,99 @@
+[
+  {
+    "id": "web",
+    "name": "OpenCloud Web (alice or bob at example.com - password demo)",
+    "secret": null,
+    "redirect_uris": [
+      "http://cloud.localhost/",
+      "http://cloud.localhost/oidc-callback.html",
+      "http://cloud.localhost/oidc-silent-redirect.html"
+    ],
+    "post_logout_redirect_uris": [
+      "http://cloud.localhost/"
+    ],
+    "allowed_origins": [
+      "http://cloud.localhost"
+    ],
+    "enabled": true,
+    "flows_enabled": [
+      "authorization_code",
+      "refresh_token"
+    ],
+    "access_token_alg": "RS256",
+    "id_token_alg": "RS256",
+    "auth_code_lifetime": 60,
+    "access_token_lifetime": 1800,
+    "scopes": [
+      "openid",
+      "profile",
+      "email",
+      "groups"
+    ],
+    "default_scopes": [
+      "openid",
+      "profile",
+      "email",
+      "groups"
+    ],
+    "challenges": [
+      "S256"
+    ],
+    "force_mfa": false
+  },
+  {
+    "id": "opencloud-mcp",
+    "name": "OpenCloud MCP server",
+    "secret": {
+      "Plain": "local-compose-opencloud-mcp-client-secret-that-is-64-characters-"
+    },
+    "redirect_uris": [],
+    "enabled": true,
+    "flows_enabled": [
+      "urn:ietf:params:oauth:grant-type:token-exchange"
+    ],
+    "access_token_alg": "RS256",
+    "id_token_alg": "RS256",
+    "auth_code_lifetime": 60,
+    "access_token_lifetime": 300,
+    "scopes": [
+      "openid",
+      "profile",
+      "email",
+      "groups"
+    ],
+    "default_scopes": [
+      "openid",
+      "profile",
+      "email",
+      "groups"
+    ],
+    "force_mfa": false
+  },
+  {
+    "id": "live-test",
+    "name": "opencloud-mcp live test",
+    "secret": null,
+    "redirect_uris": [],
+    "enabled": true,
+    "flows_enabled": [
+      "password"
+    ],
+    "access_token_alg": "RS256",
+    "id_token_alg": "RS256",
+    "auth_code_lifetime": 60,
+    "access_token_lifetime": 300,
+    "scopes": [
+      "openid",
+      "profile",
+      "email",
+      "groups"
+    ],
+    "default_scopes": [
+      "openid",
+      "profile",
+      "email",
+      "groups"
+    ],
+    "force_mfa": false
+  }
+]

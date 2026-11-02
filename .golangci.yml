@@ -1,0 +1,75 @@
+# OpenCloud's own linter set (github.com/opencloud-eu/opencloud .golangci.yml), in golangci-lint v2 form
+version: "2"
+
+run:
+  modules-download-mode: readonly
+  # as OpenCloud, test files are not linted; go vet still checks them
+  tests: false
+
+linters:
+  default: all
+  disable:
+    - contextcheck
+    - lll
+    - exhaustruct
+    - exhaustruct_v5
+    - exhaustive
+    - wrapcheck
+    - wsl
+    - wsl_v5
+    - varnamelen
+    - tagliatelle
+    - godox
+    - forbidigo
+    - gochecknoglobals
+    - nlreturn
+    - godot
+    - funlen
+    - mnd
+    - ireturn
+    - err113
+    - containedctx
+    - paralleltest
+    - gocritic
+    - whitespace
+    - cyclop
+    - noctx
+    - testpackage
+    - forcetypeassert
+    - nonamedreturns
+    - dupl
+    - errorlint
+    - unparam
+    - gocognit
+    - nestif
+    - depguard
+    # linters newer than OpenCloud's golangci-lint v1.64, off as its style does not follow them
+    - noinlineerr
+    - gomodguard
+    - funcorder
+    - embeddedstructfieldcheck
+  settings:
+    tagalign:
+      align: false
+      sort: true
+    gocyclo:
+      min-complexity: 35
+    interfacebloat:
+      max: 15
+  exclusions:
+    presets:
+      - common-false-positives
+      - legacy
+      - std-error-handling
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/opencloud-eu/opencloud-mcp
+
+severity:
+  default: error

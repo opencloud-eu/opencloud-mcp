@@ -1,0 +1,43 @@
+# OpenCloud's default CSP of v9.0.0 with Rauthy, which the web UI talks to and renews its sign-in
+# through, and Collabora, whose editor it frames
+directives:
+  child-src:
+    - '''self'''
+  connect-src:
+    - '''self'''
+    - 'blob:'
+    - 'https://raw.githubusercontent.com/opencloud-eu/awesome-apps/'
+    - 'https://update.opencloud.eu/'
+    - 'http://id.localhost/'
+  default-src:
+    - '''none'''
+  font-src:
+    - '''self'''
+  frame-ancestors:
+    - '''self'''
+  frame-src:
+    - '''self'''
+    - 'blob:'
+    - 'https://embed.diagrams.net/'
+    - 'http://id.localhost/'
+    - 'http://collabora.localhost/'
+  img-src:
+    - '''self'''
+    - 'data:'
+    - 'blob:'
+    - 'http://collabora.localhost/'
+    - 'https://raw.githubusercontent.com/opencloud-eu/awesome-apps/'
+  manifest-src:
+    - '''self'''
+  media-src:
+    - '''self'''
+  object-src:
+    - '''self'''
+    - 'blob:'
+  script-src:
+    - '''self'''
+    - '''unsafe-inline'''
+  style-src:
+    - '''self'''
+    - '''unsafe-inline'''
+    - 'blob:'

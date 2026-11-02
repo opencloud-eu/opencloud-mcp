@@ -1,0 +1,32 @@
+# DRAFT: not run anywhere yet; the images and the trigger follow OpenCloud's other Woodpecker
+# repos and need a check against the CI before this goes live; the test task's -race needs a C
+# compiler in the image
+when:
+  - event: push
+    branch: ${CI_REPO_DEFAULT_BRANCH}
+  - event: [pull_request, manual, tag]
+
+variables:
+  - &mise_image 'jdxcode/mise:latest'
+
+steps:
+  - name: lint
+    image: *mise_image
+    commands:
+      - mise trust
+      - mise install
+      - mise run lint
+
+  - name: test
+    image: *mise_image
+    commands:
+      - mise trust
+      - mise install
+      - mise run test
+
+  - name: build
+    image: *mise_image
+    commands:
+      - mise trust
+      - mise install
+      - mise run build

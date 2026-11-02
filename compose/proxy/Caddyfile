@@ -1,0 +1,27 @@
+{
+	admin off
+	auto_https off
+}
+
+http://localhost {
+	reverse_proxy chat:9203
+}
+
+http://cloud.localhost {
+	# OpenCloud redirects every request forwarded from plain http to https
+	reverse_proxy opencloud:9200 {
+		header_up -X-Forwarded-Proto
+	}
+}
+
+http://id.localhost {
+	reverse_proxy rauthy:9201
+}
+
+http://mcp.localhost {
+	reverse_proxy mcp:9202
+}
+
+http://collabora.localhost {
+	reverse_proxy collabora:9980
+}

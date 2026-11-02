@@ -1,0 +1,22 @@
+[
+  {
+    "email": "alice@example.com",
+    "preferred_username": "alice",
+    "given_name": "Alice",
+    "family_name": "Example",
+    "password": { "Plain": "demo" },
+    "roles": [],
+    "enabled": true,
+    "email_verified": true
+  },
+  {
+    "email": "bob@example.com",
+    "preferred_username": "bob",
+    "given_name": "Bob",
+    "family_name": "Example",
+    "password": { "Plain": "demo" },
+    "roles": [],
+    "enabled": true,
+    "email_verified": true
+  }
+]

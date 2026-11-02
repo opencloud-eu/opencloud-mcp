@@ -1,0 +1,7 @@
+[
+  {
+    "name": "setup",
+    "secret": { "Plain": "local-compose-setup-api-key-secret-that-is-at-least-64-characters" },
+    "access": [{ "group": "Clients", "access_rights": ["read", "update"] }]
+  }
+]
