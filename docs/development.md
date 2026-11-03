@@ -31,18 +31,22 @@ and the parity report are of the same OpenCloud.
 
 Woodpecker runs the workflows in `.woodpecker/`, with the same mise tasks and tools as here:
 
-- `test`: `mise run tidy`, `lint`, `test` and `build`, on every pull request, push to main and
-  tag; the live tests run against `opencloud-rolling:daily` as a service, pulled anew each time,
-  which `compose/opencloud/ci.sh` gives alice, bob, the demo's seed and their app tokens; the
-  tests that need the demo's Rauthy, Collabora or Tika skip
-- `container`: the image of the `Dockerfile` for linux/amd64 and linux/arm64, built but not pushed
-- `release`: on main, [ready-release-go](https://github.com/woodpecker-ci/plugin-ready-release-go)
-  keeps a `next-release/main` pull request with the changelog; merging it tags the release, and
-  the tag builds the binaries with `mise run dist`, for Linux, macOS and Windows on amd64 and
-  arm64, and puts them on the GitHub release with their SHA-256 checksums
+- `test`: `mise run tidy`, `lint` and `test`, on every pull request, push to main and tag; the
+  live tests run against `opencloud-rolling:daily` as a service, pulled anew each time, which
+  `compose/opencloud/ci.sh` gives alice, bob, the demo's seed and their app tokens; the tests
+  that need the demo's Rauthy, Collabora or Tika skip
+- `build`: `mise run build`, beside the tests
+- `container`: the image of the `Dockerfile` for linux/amd64 and linux/arm64, built but not
+  pushed, beside the tests
+- `release`: once `test` passed, on main, [ready-release-go][rrg] keeps a `next-release/main`
+  pull request with the changelog; merging it tags the release, and the tag builds the
+  binaries with `mise run dist`, for Linux, macOS and Windows on amd64 and arm64, and puts them
+  on the GitHub release with their SHA-256 checksums
 
 The changelog is made of the pull request titles, grouped by their `Type:*` label
 (`release-config.ts`), so the title is the entry and the label decides the version bump.
+
+[rrg]: https://github.com/woodpecker-ci/plugin-ready-release-go
 
 A workflow runs locally with the woodpecker-cli, from the repository:
 

@@ -1,4 +1,4 @@
-# lint, unit tests and a build of every change, with the Go and golangci-lint of mise.toml; the
+# tidy, lint and the unit tests of every change, with the Go and golangci-lint of mise.toml; the
 # live tests run against the latest daily OpenCloud as a service, the ones that need the demo's
 # Rauthy, Collabora or Tika skip
 variables:
@@ -49,13 +49,6 @@ steps:
       - apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends gcc libc6-dev >/dev/null
       - eval "$(sh compose/opencloud/ci.sh http://opencloud:9200 admin)"
       - mise run test
-
-  - name: build
-    image: *mise_image
-    environment: *environment
-    commands:
-      - mise run build
-      - bin/opencloud-mcp --version
 
 services:
   # OpenCloud signs in by basic auth and app tokens here; its own IdP is left out, it takes only https

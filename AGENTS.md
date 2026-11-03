@@ -55,9 +55,9 @@ takes Go and golangci-lint from `mise.toml` too, through the `jdxcode/mise` imag
 
 ## CI and releases
 
-Woodpecker runs `.woodpecker/` with the mise tasks: `test` (tidy, lint, unit and live tests,
-build) on every PR, push to main and tag, the live tests against `opencloud-rolling:daily`;
-`container` builds the image for amd64 and arm64 without pushing it; `release` keeps the
-next-release PR of ready-release-go up to date on main, and on its tag puts the binaries of
-`mise run dist` on the GitHub release. The PR title and its `Type:*` label are the changelog
-entry (`release-config.ts`).
+Woodpecker runs `.woodpecker/` with the mise tasks, on every PR, push to main and tag: `test`
+(tidy, lint, unit and live tests, the live ones against `opencloud-rolling:daily`), and beside it
+`build` and `container`, which builds the image for amd64 and arm64 without pushing it. After
+`test`, `release` keeps the next-release PR of ready-release-go up to date on main, and on its
+tag puts the binaries of `mise run dist` on the GitHub release. The PR title and its `Type:*`
+label are the changelog entry (`release-config.ts`).

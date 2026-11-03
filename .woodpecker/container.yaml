@@ -1,5 +1,5 @@
-# builds the image of the Dockerfile for both platforms; nothing is pushed while the repository
-# is private
+# builds the image of the Dockerfile for both platforms, beside the tests; nothing is pushed while
+# the repository is private
 when:
   - event: [push, manual]
     branch: ${CI_REPO_DEFAULT_BRANCH}
@@ -7,9 +7,6 @@ when:
   - event: pull_request
     evaluate: |
       !(CI_COMMIT_SOURCE_BRANCH matches "next-release/(main|stable-*)" && CI_COMMIT_AUTHOR == "openclouders")
-
-depends_on:
-  - test
 
 steps:
   - name: dryrun
