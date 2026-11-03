@@ -1,5 +1,6 @@
 # lint, unit tests and a build of every change, with the Go and golangci-lint of mise.toml; the
-# live tests need the compose demo and run only on a developer's machine (mise run test:live)
+# live tests run against the latest daily OpenCloud as a service, the ones that need the demo's
+# Rauthy, Collabora or Tika skip
 variables:
   - &mise_image 'docker.io/jdxcode/mise:2026.10.25-debian'
   - &environment
@@ -39,10 +40,14 @@ steps:
 
   - name: test
     image: *mise_image
-    environment: *environment
+    environment:
+      <<: *environment
+      # the service is reached directly, not through the proxy
+      NO_PROXY: opencloud
     commands:
-      # -race needs a C compiler, which the image has not; the live tests skip without the demo
+      # -race needs a C compiler, which the image has not
       - apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends gcc libc6-dev >/dev/null
+      - eval "$(sh compose/opencloud/ci.sh http://opencloud:9200 admin)"
       - mise run test
 
   - name: build
@@ -51,3 +56,21 @@ steps:
     commands:
       - mise run build
       - bin/opencloud-mcp --version
+
+services:
+  # OpenCloud signs in by basic auth and app tokens here; its own IdP is left out, it takes only https
+  - name: opencloud
+    image: docker.io/opencloudeu/opencloud-rolling:daily
+    pull: true
+    environment:
+      OC_URL: http://opencloud:9200
+      PROXY_TLS: 'false'
+      OC_INSECURE: 'true'
+      OC_LOG_LEVEL: error
+      OC_EXCLUDE_RUN_SERVICES: idp
+      IDM_ADMIN_PASSWORD: admin
+      PROXY_ENABLE_BASIC_AUTH: 'true'
+      PROXY_ENABLE_APP_AUTH: 'true'
+    commands:
+      - opencloud init || true
+      - opencloud server

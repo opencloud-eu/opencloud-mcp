@@ -9,7 +9,8 @@ mise run run        # the server on stdio
 
 The live test runs against a local OpenCloud (`OPENCLOUD_URL`, the demo's `http://cloud.localhost`
 when unset; it only accepts a loopback, `localhost` or `.test` address) with `OPENCLOUD_USER` and
-`OPENCLOUD_APP_TOKEN` set, and `OPENCLOUD_INSECURE_TLS=true` for its own certificate. It writes
+`OPENCLOUD_APP_TOKEN` set, and `OPENCLOUD_INSECURE_TLS=true` for its own certificate.
+`OPENCLOUD_LIVE_ANY_HOST=true` lifts the address check, for the OpenCloud service of CI. It writes
 files into the user's personal space, searches them with every filter of `search`, goes through
 their versions and the trash, and removes them again. Without such an instance it skips with
 `needs: opencloud`. Sharing needs a second user, `OPENCLOUD_PEER_USER` and
@@ -31,7 +32,9 @@ and the parity report are of the same OpenCloud.
 Woodpecker runs the workflows in `.woodpecker/`, with the same mise tasks and tools as here:
 
 - `test`: `mise run tidy`, `lint`, `test` and `build`, on every pull request, push to main and
-  tag; the live tests skip there
+  tag; the live tests run against `opencloud-rolling:daily` as a service, pulled anew each time,
+  which `compose/opencloud/ci.sh` gives alice, bob, the demo's seed and their app tokens; the
+  tests that need the demo's Rauthy, Collabora or Tika skip
 - `container`: the image of the `Dockerfile` for linux/amd64 and linux/arm64, built but not pushed
 - `release`: on main, [ready-release-go](https://github.com/woodpecker-ci/plugin-ready-release-go)
   keeps a `next-release/main` pull request with the changelog; merging it tags the release, and
