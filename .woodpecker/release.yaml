@@ -1,0 +1,57 @@
+# a push to main updates the next-release PR, whose merge tags the release; the tag builds the
+# binaries and puts them on the GitHub release
+when:
+  - event: push
+    branch: ${CI_REPO_DEFAULT_BRANCH}
+  - event: tag
+
+depends_on:
+  - test
+
+# the Go home as workspace, so the steps share the module cache
+workspace:
+  base: /go
+  path: src/opencloud-mcp
+
+steps:
+  - name: release-helper
+    image: woodpeckerci/plugin-ready-release-go:latest
+    settings:
+      git_email: devops@opencloud.eu
+      forge_type: github
+      forge_token:
+        from_secret: github_token
+    when:
+      - event: push
+
+  - name: binaries
+    image: docker.io/golang:1.27.3
+    environment:
+      CGO_ENABLED: '0'
+      HTTP_PROXY:
+        from_secret: ci_http_proxy
+      HTTPS_PROXY:
+        from_secret: ci_http_proxy
+    commands:
+      - |
+        for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
+          os=$${target%/*} arch=$${target#*/} ext=
+          [ "$os" = windows ] && ext=.exe
+          GOOS=$os GOARCH=$arch go build -trimpath -ldflags "-s -w -X main.version=$${CI_COMMIT_TAG#v}" \
+            -o "dist/opencloud-mcp-$${CI_COMMIT_TAG}-$os-$arch$ext" ./cmd/opencloud-mcp
+        done
+    when:
+      - event: tag
+
+  # the release helper made the release with its notes; this adds the binaries and their checksums
+  - name: github-release
+    image: woodpeckerci/plugin-release
+    settings:
+      api_key:
+        from_secret: github_token
+      files:
+        - dist/*
+      checksum:
+        - sha256
+    when:
+      - event: tag
