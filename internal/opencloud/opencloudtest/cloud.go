@@ -93,6 +93,14 @@ func (c *Cloud) Account(user, token string) {
 	c.tokens[user] = token
 }
 
+// Revoke takes the app token of user away, as deleting it in OpenCloud does: a 401 from then on.
+func (c *Cloud) Revoke(user string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	delete(c.tokens, user)
+}
+
 // TrustBearer takes a bearer token when accept names its user.
 func (c *Cloud) TrustBearer(accept func(token string) (user string, ok bool)) {
 	c.mu.Lock()
