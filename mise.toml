@@ -29,6 +29,24 @@ run = "docker compose logs --no-log-prefix app-tokens | grep '^export ' | tail -
 description = "the demo down, its data and its image of this server deleted, for a start from scratch"
 run = "docker compose down --remove-orphans --volumes --rmi local"
 
+[tasks.tidy]
+description = "fails when go.mod or go.sum are not tidy"
+run = "go mod tidy -diff"
+
+[tasks.dist]
+description = "the release binaries for Linux, macOS and Windows on amd64 and arm64 in dist/, VERSION names them"
+env = { CGO_ENABLED = "0" }
+run = '''
+version=${VERSION:-dev}
+rm -rf dist
+for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
+  os=${target%/*} arch=${target#*/} ext=
+  [ "$os" = windows ] && ext=.exe
+  GOOS=$os GOARCH=$arch go build -trimpath -ldflags "-s -w -X main.version=${version#v}" \
+    -o "dist/opencloud-mcp-$version-$os-$arch$ext" ./cmd/opencloud-mcp
+done
+'''
+
 [tasks.lint]
 description = "go vet and golangci-lint"
 run = ["go vet ./...", "golangci-lint run ./..."]

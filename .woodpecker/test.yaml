@@ -1,13 +1,18 @@
-# lint, unit tests and a build of every change; the live tests need the compose demo and run only
-# on a developer's machine (mise run test:live)
+# lint, unit tests and a build of every change, with the Go and golangci-lint of mise.toml; the
+# live tests need the compose demo and run only on a developer's machine (mise run test:live)
 variables:
-  # the Go of mise.toml and of GO_VERSION in the Dockerfile; Debian, so -race finds its C compiler
-  - &golang_image 'docker.io/golang:1.27.3'
+  - &mise_image 'docker.io/jdxcode/mise:2026.10.25-debian'
   - &environment
     HTTP_PROXY:
       from_secret: ci_http_proxy
     HTTPS_PROXY:
       from_secret: ci_http_proxy
+    # the tools and the Go caches live in the workspace, so the steps install them once
+    MISE_DATA_DIR: /woodpecker/mise
+    MISE_CACHE_DIR: /woodpecker/mise/cache
+    GOPATH: /woodpecker/go
+    GOCACHE: /woodpecker/go/cache
+    MISE_TRUSTED_CONFIG_PATHS: ${CI_WORKSPACE}
 
 when:
   - event: [push, manual]
@@ -18,38 +23,31 @@ when:
     evaluate: |
       !(CI_COMMIT_SOURCE_BRANCH matches "next-release/(main|stable-*)" && CI_COMMIT_AUTHOR == "openclouders")
 
-# the Go home as workspace, so the steps share the module cache
-# the Go home as workspace, so the steps share the module cache
-workspace:
-  base: /go
-  path: src/opencloud-mcp
-
 steps:
-  - name: tidy
-    image: *golang_image
+  - name: install
+    image: *mise_image
     environment: *environment
     commands:
-      - go mod tidy -diff
+      - mise install
+      - mise run tidy
 
   - name: lint
-    image: *golang_image
+    image: *mise_image
     environment: *environment
     commands:
-      - go vet ./...
-      # the golangci-lint of mise.toml, built with the Go above so it reads this Go's syntax
-      - go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0
-      - golangci-lint run ./...
+      - mise run lint
 
   - name: test
-    image: *golang_image
+    image: *mise_image
     environment: *environment
     commands:
-      # the live tests skip without the demo
-      - go test -race ./...
+      # -race needs a C compiler, which the image has not; the live tests skip without the demo
+      - apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends gcc libc6-dev >/dev/null
+      - mise run test
 
   - name: build
-    image: *golang_image
+    image: *mise_image
     environment: *environment
     commands:
-      - go build -trimpath -o bin/opencloud-mcp ./cmd/opencloud-mcp
+      - mise run build
       - bin/opencloud-mcp --version

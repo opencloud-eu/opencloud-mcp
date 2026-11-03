@@ -50,13 +50,13 @@ The release is pinned in several places that move together:
 
 Then `mise run demo:reset`, `mise run demo` and, beside it, `mise run test:live`.
 
-The Go version is in `mise.toml`, in `GO_VERSION` of the `Dockerfile` and in the `golang` image of
-`.woodpecker/test.yaml` and `.woodpecker/release.yaml`; they move together. So does golangci-lint
-in `mise.toml` and in the `go install` of `.woodpecker/test.yaml`.
+The Go version is in `mise.toml` and in `GO_VERSION` of the `Dockerfile`; they move together. CI
+takes Go and golangci-lint from `mise.toml` too, through the `jdxcode/mise` image of `.woodpecker/`.
 
 ## CI and releases
 
-Woodpecker runs `.woodpecker/`: `test` (tidy, lint, unit tests, build) on every PR, push to main
-and tag; `container` builds the image for amd64 and arm64 without pushing it; `release` keeps the
-next-release PR of ready-release-go up to date on main, and on its tag puts the binaries on the
-GitHub release. The PR title and its `Type:*` label are the changelog entry (`release-config.ts`).
+Woodpecker runs `.woodpecker/` with the mise tasks: `test` (tidy, lint, unit tests, build) on
+every PR, push to main and tag; `container` builds the image for amd64 and arm64 without pushing
+it; `release` keeps the next-release PR of ready-release-go up to date on main, and on its tag
+puts the binaries of `mise run dist` on the GitHub release. The PR title and its `Type:*` label
+are the changelog entry (`release-config.ts`).
