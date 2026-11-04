@@ -1,6 +1,6 @@
 # OpenCloud MCP Server
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) ![Lab status](https://img.shields.io/badge/🧪-LAB-DFB317?style=flat)
 
 An [MCP](https://modelcontextprotocol.io) server for [OpenCloud](https://github.com/opencloud-eu/opencloud).
 It lets an MCP client work with the spaces of an OpenCloud user: list them, look into folders,
@@ -18,6 +18,9 @@ cache, no background copy. Every request goes straight to OpenCloud as the signe
 
 It speaks MCP 2026-07-28 (stateless, `server/discover`, `subscriptions/listen`) and the older
 revisions as far as the [go-sdk](https://github.com/modelcontextprotocol/go-sdk) serves them.
+
+> [!WARNING]
+> **Lab status:** This project is under active development. It is intended for testing and evaluation, not production use. Features, APIs and behavior may change without notice.
 
 ## Install
 
