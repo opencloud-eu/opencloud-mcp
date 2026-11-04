@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 780" width="1200" height="780" role="img" aria-label="Example chat: asked what was promised to a customer about availability, the agent reads the contract and answers with the file and section as source">
+  <rect width="1200" height="780" rx="24" fill="#f1f3f4"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <rect x="40" y="40" width="1120" height="700" rx="20" fill="#ffffff" stroke="#e3e8ea" stroke-width="2"/>
+    <!-- title bar -->
+    <circle cx="76" cy="76" r="7" fill="#dfe3e5"/><circle cx="98" cy="76" r="7" fill="#dfe3e5"/><circle cx="120" cy="76" r="7" fill="#dfe3e5"/>
+    <text x="600" y="84" font-size="22" fill="#5c666b" text-anchor="middle">Chat client with OpenCloud MCP</text>
+    <path d="M40 112 h1120" stroke="#eef1f2" stroke-width="2"/>
+
+    <!-- user 1 -->
+    <rect x="560" y="144" width="560" height="56" rx="20" fill="#f1f3f4"/>
+    <text x="584" y="180" font-size="23" fill="#1d2a2f">What did we promise Meridian on availability?</text>
+
+    <!-- agent 1 -->
+    <circle cx="100" cy="248" r="20" fill="#20434f"/><circle cx="100" cy="248" r="7" fill="#e2baff"/>
+    <path d="M140 240 l6 6 l12 -12" fill="none" stroke="#5c8a75" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="168" y="248" font-size="20" fill="#8a9298">read_file · Contract_Meridian_2023.pdf</text>
+    <text x="140" y="292" font-size="23" fill="#1d2a2f">99.5 % as a yearly average, measured monthly. Below 99.0 % a</text>
+    <text x="140" y="324" font-size="23" fill="#1d2a2f">contractual penalty applies.</text>
+    <rect x="140" y="344" width="360" height="44" rx="12" fill="#f7f2fc"/>
+    <path d="M158 356 h12 l7 7 v15 h-19 z M170 356 v7 h7" fill="none" stroke="#20434f" stroke-width="2" stroke-linejoin="round"/>
+    <text x="190" y="373" font-size="20" fill="#20434f">Contract_Meridian_2023.pdf · §7</text>
+
+    <!-- user 2 -->
+    <rect x="860" y="424" width="260" height="56" rx="20" fill="#f1f3f4"/>
+    <text x="884" y="460" font-size="23" fill="#1d2a2f">And the notice period?</text>
+
+    <!-- agent 2 -->
+    <circle cx="100" cy="528" r="20" fill="#20434f"/><circle cx="100" cy="528" r="7" fill="#e2baff"/>
+    <text x="140" y="536" font-size="23" fill="#1d2a2f">Three months to the end of a quarter.</text>
+    <rect x="140" y="556" width="372" height="44" rx="12" fill="#f7f2fc"/>
+    <path d="M158 568 h12 l7 7 v15 h-19 z M170 568 v7 h7" fill="none" stroke="#20434f" stroke-width="2" stroke-linejoin="round"/>
+    <text x="190" y="585" font-size="20" fill="#20434f">Contract_Meridian_2023.pdf · §12</text>
+
+    <!-- input -->
+    <rect x="80" y="652" width="1040" height="60" rx="16" fill="#ffffff" stroke="#dbe4e8" stroke-width="2"/>
+    <text x="108" y="690" font-size="22" fill="#9aa7ad">Ask your OpenCloud</text>
+    <rect x="1062" y="660" width="44" height="44" rx="12" fill="#20434f"/>
+    <path d="M1084 694 v-24 M1074 680 l10 -10 l10 10" fill="none" stroke="#e2baff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
