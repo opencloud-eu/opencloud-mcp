@@ -17,7 +17,11 @@
     <!-- OpenCloud MCP -->
     <rect x="600" y="96" width="400" height="248" rx="20" fill="#20434f"/>
     <rect x="632" y="128" width="64" height="64" rx="16" fill="#e2baff"/>
-    <path d="M652 172 l12 -12 M660 148 a10 10 0 1 0 12 12 l12 12 l-6 6 l-12 -12" fill="none" stroke="#20434f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <g transform="translate(632 128)" fill="none" stroke="#20434f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M26 12 v10 M38 12 v10"/>
+      <path d="M19 22 h26 v8 a13 13 0 0 1 -26 0 z"/>
+      <path d="M32 43 v9"/>
+    </g>
     <text x="632" y="244" font-size="34" font-weight="700" fill="#ffffff">OpenCloud MCP</text>
     <text x="632" y="284" font-size="24" fill="#c3d3d9">Turns the question into calls,</text>
     <text x="632" y="316" font-size="24" fill="#c3d3d9">always as the signed-in user</text>
