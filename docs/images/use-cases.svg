@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 640" width="1600" height="640" role="img" aria-label="Six things to do with it: ask your files, get the overview, find files fast, file and share, undo with trash and versions, combine with other MCP servers">
+  <rect width="1600" height="640" rx="24" fill="#f1f3f4"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <!-- row 1 -->
+    <g transform="translate(48 48)">
+      <rect width="480" height="256" rx="20" fill="#ffffff" stroke="#dbe4e8" stroke-width="2"/>
+      <g transform="translate(32 32)"><rect width="64" height="64" rx="16" fill="#20434f"/><path d="M16 16 h32 a4 4 0 0 1 4 4 v18 a4 4 0 0 1 -4 4 h-16 l-8 7 v-7 h-8 a4 4 0 0 1 -4 -4 v-18 a4 4 0 0 1 4 -4 z" fill="none" stroke="#e2baff" stroke-width="3" stroke-linejoin="round"/><path d="M28 24 a4 4 0 1 1 6 3.5 c-1.5 0.8 -2 1.7 -2 3" fill="none" stroke="#e2baff" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="36" r="1.8" fill="#e2baff"/></g>
+      <text x="116" y="74" font-size="30" font-weight="700" fill="#20434f">Ask your files</text>
+      <text x="32" y="150" font-size="23" fill="#40484c">“What did we promise customer X?”</text>
+      <text x="32" y="182" font-size="23" fill="#40484c">The agent reads the contract and</text>
+      <text x="32" y="214" font-size="23" fill="#40484c">names the file it found it in.</text>
+    </g>
+    <g transform="translate(560 48)">
+      <rect width="480" height="256" rx="20" fill="#ffffff" stroke="#dbe4e8" stroke-width="2"/>
+      <g transform="translate(32 32)"><rect width="64" height="64" rx="16" fill="#20434f"/><path d="M13 20 a3 3 0 0 1 3 -3 h10 l4 5 h18 a3 3 0 0 1 3 3 v20 a3 3 0 0 1 -3 3 h-32 a3 3 0 0 1 -3 -3 z" fill="none" stroke="#e2baff" stroke-width="3" stroke-linejoin="round"/><path d="M22 31 h20 M22 38 h12" stroke="#e2baff" stroke-width="3" stroke-linecap="round"/></g>
+      <text x="116" y="74" font-size="30" font-weight="700" fill="#20434f">Get the overview</text>
+      <text x="32" y="150" font-size="23" fill="#40484c">“Summarise the project folder.”</text>
+      <text x="32" y="182" font-size="23" fill="#40484c">Markdown, text, CSV and PDF, or</text>
+      <text x="32" y="214" font-size="23" fill="#40484c">just one section by its heading.</text>
+    </g>
+    <g transform="translate(1072 48)">
+      <rect width="480" height="256" rx="20" fill="#ffffff" stroke="#dbe4e8" stroke-width="2"/>
+      <g transform="translate(32 32)"><rect width="64" height="64" rx="16" fill="#20434f"/><path d="M17 13 h16 l9 9 v10 M17 13 v36 h14" fill="none" stroke="#e2baff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="40" cy="40" r="6.5" fill="none" stroke="#e2baff" stroke-width="3"/><path d="M45 45 l6 6" stroke="#e2baff" stroke-width="3" stroke-linecap="round"/></g>
+      <text x="116" y="74" font-size="30" font-weight="700" fill="#20434f">Find files fast</text>
+      <text x="32" y="150" font-size="23" fill="#40484c">OpenCloud’s own search: words,</text>
+      <text x="32" y="182" font-size="23" fill="#40484c">tags, type, date, size or KQL.</text>
+      <text x="32" y="214" font-size="23" fill="#40484c">No clicking through folders.</text>
+    </g>
+    <!-- row 2 -->
+    <g transform="translate(48 336)">
+      <rect width="480" height="256" rx="20" fill="#ffffff" stroke="#dbe4e8" stroke-width="2"/>
+      <g transform="translate(32 32)"><rect width="64" height="64" rx="16" fill="#20434f"/><path d="M25 29 l14 -7 M25 35 l14 7" stroke="#e2baff" stroke-width="3" stroke-linecap="round"/><circle cx="21" cy="32" r="5.5" fill="#20434f" stroke="#e2baff" stroke-width="3"/><circle cx="43" cy="20" r="5.5" fill="#20434f" stroke="#e2baff" stroke-width="3"/><circle cx="43" cy="44" r="5.5" fill="#20434f" stroke="#e2baff" stroke-width="3"/></g>
+      <text x="116" y="74" font-size="30" font-weight="700" fill="#20434f">File and share</text>
+      <text x="32" y="150" font-size="23" fill="#40484c">“Put the offer into Sales 2026 and</text>
+      <text x="32" y="182" font-size="23" fill="#40484c">share it with Team Product,</text>
+      <text x="32" y="214" font-size="23" fill="#40484c">read only.”</text>
+    </g>
+    <g transform="translate(560 336)">
+      <rect width="480" height="256" rx="20" fill="#ffffff" stroke="#dbe4e8" stroke-width="2"/>
+      <g transform="translate(32 32)"><rect width="64" height="64" rx="16" fill="#20434f"/><path d="M22 26 h18 a10 10 0 0 1 0 20 h-14" fill="none" stroke="#e2baff" stroke-width="3" stroke-linecap="round"/><path d="M28 18 l-8 8 l8 8" fill="none" stroke="#e2baff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <text x="116" y="74" font-size="30" font-weight="700" fill="#20434f">Undo mistakes</text>
+      <text x="32" y="150" font-size="23" fill="#40484c">Bring back what is in the trash</text>
+      <text x="32" y="182" font-size="23" fill="#40484c">or an earlier version of a file.</text>
+    </g>
+    <g transform="translate(1072 336)">
+      <rect width="480" height="256" rx="20" fill="#ffffff" stroke="#dbe4e8" stroke-width="2"/>
+      <g transform="translate(32 32)"><rect width="64" height="64" rx="16" fill="#20434f"/><rect x="11" y="22" width="16" height="20" rx="4" fill="none" stroke="#e2baff" stroke-width="3"/><rect x="37" y="22" width="16" height="20" rx="4" fill="none" stroke="#e2baff" stroke-width="3"/><path d="M29 28 h6 M32.5 25.5 l2.5 2.5 l-2.5 2.5 M35 36 h-6 M31.5 33.5 l-2.5 2.5 l2.5 2.5" fill="none" stroke="#e2baff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <text x="116" y="74" font-size="30" font-weight="700" fill="#20434f">Across tools</text>
+      <text x="32" y="150" font-size="23" fill="#40484c">Next to other MCP servers: read a</text>
+      <text x="32" y="182" font-size="23" fill="#40484c">ticket elsewhere, fetch the spec</text>
+      <text x="32" y="214" font-size="23" fill="#40484c">here, file the result back.</text>
+    </g>
+  </g>
+</svg>

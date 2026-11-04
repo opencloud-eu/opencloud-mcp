@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 440" width="1600" height="440" role="img" aria-label="How it works: an AI agent asks, OpenCloud MCP turns the question into API calls with the user's permissions, OpenCloud answers from the user's spaces, files and shares">
+  <rect width="1600" height="440" rx="24" fill="#f1f3f4"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <!-- AI agent -->
+    <rect x="48" y="96" width="400" height="248" rx="20" fill="#ffffff" stroke="#dbe4e8" stroke-width="2"/>
+    <rect x="80" y="128" width="64" height="64" rx="16" fill="#20434f"/>
+    <path d="M96 146 h32 a4 4 0 0 1 4 4 v16 a4 4 0 0 1 -4 4 h-16 l-8 7 v-7 h-8 a4 4 0 0 1 -4 -4 v-16 a4 4 0 0 1 4 -4 z" fill="none" stroke="#e2baff" stroke-width="3" stroke-linejoin="round"/>
+    <text x="80" y="244" font-size="34" font-weight="700" fill="#20434f">AI agent</text>
+    <text x="80" y="284" font-size="24" fill="#40484c">Claude, LibreChat, Open WebUI</text>
+    <text x="80" y="316" font-size="24" fill="#40484c">or a local model</text>
+
+    <!-- arrow 1 -->
+    <path d="M472 220 h96" stroke="#20434f" stroke-width="4" stroke-linecap="round"/>
+    <path d="M556 206 l16 14 l-16 14" fill="none" stroke="#20434f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="520" y="196" font-size="20" fill="#5c666b" text-anchor="middle">MCP</text>
+
+    <!-- OpenCloud MCP -->
+    <rect x="600" y="96" width="400" height="248" rx="20" fill="#20434f"/>
+    <rect x="632" y="128" width="64" height="64" rx="16" fill="#e2baff"/>
+    <g transform="translate(632 128)" fill="none" stroke="#20434f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M26 12 v10 M38 12 v10"/>
+      <path d="M19 22 h26 v8 a13 13 0 0 1 -26 0 z"/>
+      <path d="M32 43 v9"/>
+    </g>
+    <text x="632" y="244" font-size="34" font-weight="700" fill="#ffffff">OpenCloud MCP</text>
+    <text x="632" y="284" font-size="24" fill="#c3d3d9">Turns the question into calls,</text>
+    <text x="632" y="316" font-size="24" fill="#c3d3d9">always as the signed-in user</text>
+
+    <!-- arrow 2 -->
+    <path d="M1024 220 h96" stroke="#20434f" stroke-width="4" stroke-linecap="round"/>
+    <path d="M1108 206 l16 14 l-16 14" fill="none" stroke="#20434f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="1072" y="196" font-size="20" fill="#5c666b" text-anchor="middle">APIs</text>
+
+    <!-- OpenCloud -->
+    <rect x="1152" y="96" width="400" height="248" rx="20" fill="#ffffff" stroke="#dbe4e8" stroke-width="2"/>
+    <rect x="1184" y="128" width="64" height="64" rx="16" fill="#20434f"/>
+    <path d="M1200 176 h30 a9 9 0 0 0 0 -18 a12 12 0 0 0 -23 -2 a8 8 0 0 0 -7 20 z" fill="none" stroke="#e2baff" stroke-width="3" stroke-linejoin="round"/>
+    <text x="1184" y="244" font-size="34" font-weight="700" fill="#20434f">OpenCloud</text>
+    <text x="1184" y="284" font-size="24" fill="#40484c">Your spaces, files</text>
+    <text x="1184" y="316" font-size="24" fill="#40484c">and shares</text>
+
+    <text x="800" y="400" font-size="22" fill="#5c666b" text-anchor="middle">No index, no cache, no copy: every request goes straight to OpenCloud.</text>
+  </g>
+</svg>
