@@ -31,17 +31,18 @@ and the parity report are of the same OpenCloud.
 
 Woodpecker runs the workflows in `.woodpecker/`, with the same mise tasks and tools as here:
 
-- `test`: `mise run tidy`, `lint` and `test`, on every pull request, push to main and tag; the
+- `test`: `mise run tidy`, `lint` and `test`, on every pull request and push to main; the
   live tests run against `opencloud-rolling:daily` as a service, pulled anew each time, which
   `compose/opencloud/ci.sh` gives alice, bob, the demo's seed and their app tokens; the tests
   that need the demo's Rauthy, Collabora or Tika skip
 - `build`: `mise run build`, beside the tests
 - `container`: the image of the `Dockerfile` for linux/amd64 and linux/arm64, built but not
   pushed, beside the tests
-- `release`: once `test` passed, on main, [ready-release-go][rrg] keeps a `next-release/main`
-  pull request with the changelog; merging it tags the release, and the tag builds the
-  binaries with `mise run dist`, for Linux, macOS and Windows on amd64 and arm64, and puts them
-  on the GitHub release with their SHA-256 checksums
+- `release`: on main, [ready-release-go][rrg] keeps a `next-release/main` pull request with the
+  changelog; merging it tags the release, and the tag builds the binaries with `mise run dist`,
+  for Linux, macOS and Windows on amd64 and arm64, and puts them on the GitHub release with
+  their SHA-256 checksums; it runs no tests, everything reaches main through a tested pull
+  request
 
 The changelog is made of the pull request titles, grouped by their `Type:*` label
 (`release-config.ts`), so the title is the entry and the label decides the version bump.

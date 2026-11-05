@@ -1,12 +1,10 @@
 # a push to main updates the next-release PR, whose merge tags the release; the tag builds the
-# binaries and puts them on the GitHub release
+# binaries and puts them on the GitHub release. No tests here: everything reaches main through a
+# tested PR, and a flaky test must not hold a release back.
 when:
   - event: push
     branch: ${CI_REPO_DEFAULT_BRANCH}
   - event: tag
-
-depends_on:
-  - test
 
 steps:
   - name: release-helper

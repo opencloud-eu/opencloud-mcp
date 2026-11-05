@@ -18,7 +18,6 @@ variables:
 when:
   - event: [push, manual]
     branch: ${CI_REPO_DEFAULT_BRANCH}
-  - event: tag
   - event: pull_request
     # the next-release PR of the release helper only changes the changelog
     evaluate: |
