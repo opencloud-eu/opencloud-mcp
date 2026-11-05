@@ -1,10 +1,11 @@
 #!/bin/sh
 # alice as a space admin, the group Support with bob in it, and the project space Handbook with
 # alice as its manager and bob as a viewer, made once by admin beside the running server; the
-# opencloud CLI only reaches the services from inside this container
+# opencloud CLI only reaches the services from inside this container; CI runs it from outside with
+# SEED_CLOUD and admin's password in SEED_ADMIN_PASSWORD, by basic auth
 set -eu
 
-cloud=http://localhost:9200
+cloud=${SEED_CLOUD:-http://localhost:9200}
 manager=312c0871-5ef7-4b3a-85b6-0e4074c64049
 viewer=a8d5fe5e-96e3-418d-825b-534dbdf22b99
 # the role Space Admin is the same on every instance, its application is made by opencloud init
@@ -17,6 +18,11 @@ until curl -fs -o /dev/null "$cloud/status.php"; do sleep 2; done
 
 # a token of admin for ten minutes
 login() {
+  if [ -n "${SEED_ADMIN_PASSWORD:-}" ]; then
+    token=$SEED_ADMIN_PASSWORD
+    return
+  fi
+
   token=''
   until [ -n "$token" ]; do
     token=$(opencloud auth-app create --user-name admin --expiration 10m 2>/dev/null | sed -n 's/^ *token: //p') || true

@@ -25,7 +25,8 @@ const (
 // TestLiveSignInWithOIDC signs alice in at the compose stack's Rauthy, and reaches its OpenCloud
 // through this server with the token; it skips without the stack.
 func TestLiveSignInWithOIDC(t *testing.T) {
-	probe := &http.Client{Timeout: 3 * time.Second}
+	// the stack is on this machine, never behind a proxy such as the one of CI
+	probe := &http.Client{Timeout: 3 * time.Second, Transport: &http.Transport{Proxy: nil}}
 
 	for _, u := range []string{liveIssuer + ".well-known/openid-configuration", liveCloud + "/status.php"} {
 		resp, err := probe.Get(u)

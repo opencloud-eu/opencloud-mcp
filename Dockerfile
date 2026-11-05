@@ -1,14 +1,16 @@
 # docker build -t opencloud-mcp:dev .  (or: mise run image)
 ARG GO_VERSION=1.27.3
 
-FROM golang:${GO_VERSION}-alpine AS build
+# the build runs on the builder's own platform and compiles for the target, no emulation
+FROM --platform=$BUILDPLATFORM golang:${GO_VERSION}-alpine AS build
 
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 ARG VERSION=dev
-RUN CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o /opencloud-mcp ./cmd/opencloud-mcp
+ARG TARGETOS TARGETARCH
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o /opencloud-mcp ./cmd/opencloud-mcp
 
 FROM alpine:3.24
 

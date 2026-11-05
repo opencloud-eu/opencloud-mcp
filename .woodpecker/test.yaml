@@ -1,0 +1,69 @@
+# tidy, lint and the unit tests of every change, with the Go and golangci-lint of mise.toml; the
+# live tests run against the latest daily OpenCloud as a service, the ones that need the demo's
+# Rauthy, Collabora or Tika skip
+variables:
+  - &mise_image 'docker.io/jdxcode/mise:2026.10.25-debian'
+  - &environment
+    HTTP_PROXY:
+      from_secret: ci_http_proxy
+    HTTPS_PROXY:
+      from_secret: ci_http_proxy
+    # the tools and the Go caches live in the workspace, so the steps install them once
+    MISE_DATA_DIR: /woodpecker/mise
+    MISE_CACHE_DIR: /woodpecker/mise/cache
+    GOPATH: /woodpecker/go
+    GOCACHE: /woodpecker/go/cache
+    MISE_TRUSTED_CONFIG_PATHS: ${CI_WORKSPACE}
+
+when:
+  - event: [push, manual]
+    branch: ${CI_REPO_DEFAULT_BRANCH}
+  - event: tag
+  - event: pull_request
+    # the next-release PR of the release helper only changes the changelog
+    evaluate: |
+      !(CI_COMMIT_SOURCE_BRANCH matches "next-release/(main|stable-*)" && CI_COMMIT_AUTHOR == "openclouders")
+
+steps:
+  - name: install
+    image: *mise_image
+    environment: *environment
+    commands:
+      - mise install
+      - mise run tidy
+
+  - name: lint
+    image: *mise_image
+    environment: *environment
+    commands:
+      - mise run lint
+
+  - name: test
+    image: *mise_image
+    environment:
+      <<: *environment
+      # the service is reached directly, not through the proxy
+      NO_PROXY: opencloud
+    commands:
+      # -race needs a C compiler, which the image has not
+      - apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends gcc libc6-dev >/dev/null
+      - eval "$(sh compose/opencloud/ci.sh http://opencloud:9200 admin)"
+      - mise run test
+
+services:
+  # OpenCloud signs in by basic auth and app tokens here; its own IdP is left out, it takes only https
+  - name: opencloud
+    image: docker.io/opencloudeu/opencloud-rolling:daily
+    pull: true
+    environment:
+      OC_URL: http://opencloud:9200
+      PROXY_TLS: 'false'
+      OC_INSECURE: 'true'
+      OC_LOG_LEVEL: error
+      OC_EXCLUDE_RUN_SERVICES: idp
+      IDM_ADMIN_PASSWORD: admin
+      PROXY_ENABLE_BASIC_AUTH: 'true'
+      PROXY_ENABLE_APP_AUTH: 'true'
+    commands:
+      - opencloud init || true
+      - opencloud server

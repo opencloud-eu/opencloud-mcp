@@ -31,8 +31,12 @@ func live(t *testing.T) (*Client, *Cloud, string) {
 		addr = "http://cloud.localhost"
 	}
 
+	// the tests write and delete; anything but a local instance needs OPENCLOUD_LIVE_ANY_HOST, as
+	// the OpenCloud service of CI does
+	anyHost, _ := strconv.ParseBool(os.Getenv("OPENCLOUD_LIVE_ANY_HOST"))
+
 	u, err := url.Parse(addr)
-	if err != nil || !local(u.Hostname()) {
+	if err != nil || !anyHost && !local(u.Hostname()) {
 		t.Skipf("needs: opencloud on this machine, not %q", addr)
 	}
 
