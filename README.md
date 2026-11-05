@@ -64,6 +64,13 @@ server and the tools stay the same.
 Tested with OpenCloud 9.0.0. Earlier versions are not supported; later ones should work but are
 not checked.
 
+For Claude Desktop, download `opencloud-mcp-<version>.mcpb` from the
+[latest release](https://github.com/opencloud-eu/opencloud-mcp/releases/latest) and open it.
+Claude Desktop asks for the OpenCloud address, your user name and an
+[app token](docs/configuration.md#app-tokens), and keeps the token in the system's keychain.
+
+For other clients, the release has the binary for Linux, macOS and Windows on amd64 and arm64.
+
 From source, with [mise](https://mise.jdx.dev) providing Go and the linter:
 
 ``` console

@@ -47,6 +47,31 @@ for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 wi
 done
 '''
 
+[tasks.mcpb]
+description = "the MCP bundle for Claude Desktop in dist/, one for every platform, from the binaries of dist"
+depends = ["dist"]
+# only this task needs Node and the mcpb CLI
+tools = { node = "24.22.1", "npm:@anthropic-ai/mcpb" = "2.1.2" }
+run = '''
+version=${VERSION:-dev}
+semver=${version#v}
+[ "$semver" = dev ] && semver=0.0.0-dev
+stage=dist/mcpb
+rm -rf "$stage"
+mkdir -p "$stage/server"
+for target in darwin-amd64 darwin-arm64 linux-amd64 linux-arm64; do
+  cp "dist/opencloud-mcp-$version-$target" "$stage/server/opencloud-mcp-$target"
+done
+# Windows on ARM runs the amd64 binary in emulation; a bundle cannot choose by architecture
+cp "dist/opencloud-mcp-$version-windows-amd64.exe" "$stage/server/opencloud-mcp.exe"
+cp mcpb/opencloud-mcp "$stage/server/opencloud-mcp"
+chmod 755 "$stage"/server/opencloud-mcp*
+sed "s/@VERSION@/$semver/" mcpb/manifest.json > "$stage/manifest.json"
+mcpb validate "$stage/manifest.json"
+mcpb pack "$stage" "dist/opencloud-mcp-$version.mcpb"
+rm -rf "$stage"
+'''
+
 [tasks.lint]
 description = "go vet and golangci-lint"
 run = ["go vet ./...", "golangci-lint run ./..."]

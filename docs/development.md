@@ -42,8 +42,14 @@ Woodpecker runs the workflows in `.woodpecker/`, with the same mise tasks and to
   (`0.1`) and `latest`, a pre-release (`-alpha.`, `-beta.`, `-rc.`) only with its version
 - `release`: on main, [ready-release-go][rrg] keeps a `next-release/main` pull request with the
   changelog; merging it tags the release, and the tag builds the binaries with `mise run dist`,
-  for Linux, macOS and Windows on amd64 and arm64, and puts them on the GitHub release with
-  their SHA-256 checksums
+  for Linux, macOS and Windows on amd64 and arm64, and the MCP bundle for Claude Desktop with
+  `mise run mcpb`, and puts them on the GitHub release with their SHA-256 checksums
+
+The bundle (`mcpb/`) holds the manifest, the binaries for macOS and Linux on both architectures
+and the Windows amd64 binary, which Windows on ARM runs in emulation: a bundle chooses its
+command by system only, so on macOS and Linux the entry point is a launcher script that starts
+the binary for the machine's architecture. `mise run mcpb` brings Node and the mcpb CLI for this
+task alone.
 
 A tag runs only the image and the release, no tests: everything reaches main through a tested
 pull request.
