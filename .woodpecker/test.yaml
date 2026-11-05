@@ -14,14 +14,16 @@ variables:
     GOPATH: /woodpecker/go
     GOCACHE: /woodpecker/go/cache
     MISE_TRUSTED_CONFIG_PATHS: ${CI_WORKSPACE}
+  # the next-release PR of the release helper only changes the changelog: its steps are skipped,
+  # but the workflow still runs (clone only) and reports the status the ruleset requires
+  - &not_release_pr
+    - evaluate: |
+        !(CI_COMMIT_SOURCE_BRANCH matches "next-release/(main|stable-*)" && CI_COMMIT_AUTHOR == "openclouders")
 
 when:
   - event: [push, manual]
     branch: ${CI_REPO_DEFAULT_BRANCH}
   - event: pull_request
-    # the next-release PR of the release helper only changes the changelog
-    evaluate: |
-      !(CI_COMMIT_SOURCE_BRANCH matches "next-release/(main|stable-*)" && CI_COMMIT_AUTHOR == "openclouders")
 
 steps:
   - name: install
@@ -30,15 +32,18 @@ steps:
     commands:
       - mise install
       - mise run tidy
+    when: *not_release_pr
 
   - name: lint
     image: *mise_image
     environment: *environment
     commands:
       - mise run lint
+    when: *not_release_pr
 
   - name: test
     image: *mise_image
+    when: *not_release_pr
     environment:
       <<: *environment
       # the service is reached directly, not through the proxy
@@ -54,6 +59,7 @@ services:
   - name: opencloud
     image: docker.io/opencloudeu/opencloud-rolling:daily
     pull: true
+    when: *not_release_pr
     environment:
       OC_URL: http://opencloud:9200
       PROXY_TLS: 'false'

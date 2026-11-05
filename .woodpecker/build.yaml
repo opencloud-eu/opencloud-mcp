@@ -3,12 +3,14 @@ when:
   - event: [push, manual]
     branch: ${CI_REPO_DEFAULT_BRANCH}
   - event: pull_request
-    evaluate: |
-      !(CI_COMMIT_SOURCE_BRANCH matches "next-release/(main|stable-*)" && CI_COMMIT_AUTHOR == "openclouders")
 
 steps:
   - name: build
     image: docker.io/jdxcode/mise:2026.10.25-debian
+    # skipped on the next-release PR, which only changes the changelog; the workflow still reports
+    when:
+      - evaluate: |
+          !(CI_COMMIT_SOURCE_BRANCH matches "next-release/(main|stable-*)" && CI_COMMIT_AUTHOR == "openclouders")
     environment:
       HTTP_PROXY:
         from_secret: ci_http_proxy
