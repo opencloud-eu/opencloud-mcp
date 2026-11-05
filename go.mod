@@ -15,7 +15,7 @@ require (
 )
 
 require (
-	github.com/go-jose/go-jose/v4 v4.1.5 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.6 // indirect
 	github.com/google/jsonschema-go v0.4.3 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
