@@ -1,27 +1,70 @@
-# builds the image of the Dockerfile for both platforms, beside the tests; nothing is pushed while
-# the repository is private
+# the image of the Dockerfile for both platforms: built beside the tests on every change, pushed
+# to Docker Hub and Quay on a tag
+variables:
+  - &buildx_image 'woodpeckerci/plugin-docker-buildx:latest'
+  - &proxy
+    http_proxy:
+      from_secret: ci_http_proxy
+    https_proxy:
+      from_secret: ci_http_proxy
+  - &publish
+    <<: *proxy
+    dockerfile: Dockerfile
+    platforms: linux/amd64,linux/arm64
+    repo: opencloudeu/opencloud-mcp,quay.io/opencloudeu/opencloud-mcp
+    # v0.1.1 is tagged 0.1.1 and 0.1 (from 1.0.0 on also the major), v0.2.0-rc.1 only 0.2.0-rc.1
+    auto_tag: true
+    build_args:
+      - VERSION=${CI_COMMIT_TAG##v}
+    logins:
+      - registry: https://index.docker.io/v1/
+        username:
+          from_secret: docker_username
+        password:
+          from_secret: docker_password
+      - registry: https://quay.io
+        username:
+          from_secret: quay_username
+        password:
+          from_secret: quay_password
+
 when:
   - event: [push, manual]
     branch: ${CI_REPO_DEFAULT_BRANCH}
   - event: pull_request
+  - event: tag
 
 steps:
   - name: dryrun
-    image: woodpeckerci/plugin-docker-buildx:latest
-    # skipped on the next-release PR, which only changes the changelog; the workflow still reports
-    when:
-      - evaluate: |
-          !(CI_COMMIT_SOURCE_BRANCH matches "next-release/(main|stable-*)" && CI_COMMIT_AUTHOR == "openclouders")
+    image: *buildx_image
     settings:
+      <<: *proxy
       dry_run: true
       dockerfile: Dockerfile
       platforms: linux/amd64,linux/arm64
       pull_image: false
       repo: opencloudeu/opencloud-mcp
-      tags: ${CI_COMMIT_TAG=dev}
-      build_args:
-        - VERSION=${CI_COMMIT_TAG=dev}
-      http_proxy:
-        from_secret: ci_http_proxy
-      https_proxy:
-        from_secret: ci_http_proxy
+      tags: dev
+    # skipped on the next-release PR, which only changes the changelog; the workflow still reports
+    when:
+      - event: [push, manual, pull_request]
+        evaluate: |
+          !(CI_COMMIT_SOURCE_BRANCH matches "next-release/(main|stable-*)" && CI_COMMIT_AUTHOR == "openclouders")
+
+  # a release also takes latest; only one of the two publish steps runs on a tag
+  - name: publish
+    image: *buildx_image
+    settings:
+      <<: *publish
+      tags: latest
+    when:
+      - event: tag
+        evaluate: 'not (CI_COMMIT_TAG contains "-alpha." || CI_COMMIT_TAG contains "-beta." || CI_COMMIT_TAG contains "-rc.")'
+
+  # a pre-release only its own version, latest stays on the last release
+  - name: publish-prerelease
+    image: *buildx_image
+    settings: *publish
+    when:
+      - event: tag
+        evaluate: 'CI_COMMIT_TAG contains "-alpha." || CI_COMMIT_TAG contains "-beta." || CI_COMMIT_TAG contains "-rc."'
