@@ -68,6 +68,8 @@ cp mcpb/opencloud-mcp "$stage/server/opencloud-mcp"
 chmod 755 "$stage"/server/opencloud-mcp*
 sed "s/@VERSION@/$semver/" mcpb/manifest.json > "$stage/manifest.json"
 mcpb validate "$stage/manifest.json"
+# the launcher finds the binary of this machine
+"$stage/server/opencloud-mcp" --version
 mcpb pack "$stage" "dist/opencloud-mcp-$version.mcpb"
 rm -rf "$stage"
 '''

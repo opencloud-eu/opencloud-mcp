@@ -35,7 +35,8 @@ Woodpecker runs the workflows in `.woodpecker/`, with the same mise tasks and to
   live tests run against `opencloud-rolling:daily` as a service, pulled anew each time, which
   `compose/opencloud/ci.sh` gives alice, bob, the demo's seed and their app tokens; the tests
   that need the demo's Rauthy, Collabora or Tika skip
-- `build`: `mise run build`, beside the tests
+- `build`: `mise run mcpb`, the binaries and the bundle a release would put on GitHub, beside the
+  tests; the task validates the bundle and starts its launcher
 - `container`: the image of the `Dockerfile` for linux/amd64 and linux/arm64, built but not
   pushed, beside the tests; on a tag pushed to `opencloudeu/opencloud-mcp` on Docker Hub and
   `quay.io/opencloudeu/opencloud-mcp`, a release tagged with the version (`0.1.1`), its minor
