@@ -1,4 +1,5 @@
-# the binary of every change, with the Go of mise.toml, beside the tests
+# the release artifacts of every change, binaries and MCP bundle, with the tools of mise.toml,
+# beside the tests
 when:
   - event: [push, manual]
     branch: ${CI_REPO_DEFAULT_BRANCH}
@@ -17,9 +18,7 @@ steps:
       HTTPS_PROXY:
         from_secret: ci_http_proxy
       MISE_TRUSTED_CONFIG_PATHS: ${CI_WORKSPACE}
-      # only Go, the task would install golangci-lint too
-      MISE_TASK_RUN_AUTO_INSTALL: 'false'
     commands:
-      - mise install go
-      - mise run build
-      - bin/opencloud-mcp --version
+      # what a release puts on GitHub: the binaries and the MCP bundle, which the task validates
+      # and whose launcher it starts
+      - mise run mcpb

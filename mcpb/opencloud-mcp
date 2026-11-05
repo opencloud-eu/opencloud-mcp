@@ -1,0 +1,17 @@
+#!/bin/sh
+# The bundle's entry point on macOS and Linux: a bundle chooses its command by system only, so
+# this starts the binary for the machine's architecture. Windows runs opencloud-mcp.exe directly.
+set -eu
+
+case "$(uname -s)-$(uname -m)" in
+  Darwin-arm64) target=darwin-arm64 ;;
+  Darwin-x86_64) target=darwin-amd64 ;;
+  Linux-x86_64) target=linux-amd64 ;;
+  Linux-aarch64 | Linux-arm64) target=linux-arm64 ;;
+  *)
+    echo "opencloud-mcp: no binary for $(uname -s) on $(uname -m)" >&2
+    exit 1
+    ;;
+esac
+
+exec "$(dirname "$0")/opencloud-mcp-$target" "$@"
