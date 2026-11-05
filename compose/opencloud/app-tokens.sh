@@ -31,6 +31,14 @@ for user in alice bob; do
   fi
 done
 
+# a missing token fails the start, so compose tries again instead of the live test skipping
+for user in alice bob; do
+  if [ ! -s "/tokens/$user" ]; then
+    echo "no app token for $user" >&2
+    exit 1
+  fi
+done
+
 # a token is words and spaces
 echo "export OPENCLOUD_URL=$cloud OPENCLOUD_USER=alice OPENCLOUD_APP_TOKEN='$(cat /tokens/alice)'"
 echo "export OPENCLOUD_PEER_USER=bob OPENCLOUD_PEER_APP_TOKEN='$(cat /tokens/bob)'"

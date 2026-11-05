@@ -4,6 +4,7 @@ package tools
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"slices"
 	"time"
@@ -149,10 +150,17 @@ func (t *tools) middleware(next mcp.MethodHandler) mcp.MethodHandler {
 			return t.listResources(ctx, r)
 		case *mcp.SubscriptionsListenRequest:
 			if r.Params != nil && r.Params.Notifications != nil {
-				watching, stop := context.WithCancel(ctx)
-				defer stop()
+				listening, end := context.WithCancelCause(ctx)
+				defer end(nil)
 
-				go t.watch(watching, tokenInfo(ctx, r.Extra), r.Params.Notifications)
+				go t.watch(listening, end, tokenInfo(ctx, r.Extra), r.Params.Notifications)
+
+				res, err := next(listening, method, req)
+				if cause := context.Cause(listening); errors.Is(cause, errSignInGone) {
+					return nil, cause
+				}
+
+				return res, err
 			}
 		}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/base64"
@@ -665,6 +666,61 @@ func TestAChangeIsToldToTheListen(t *testing.T) {
 
 	if err := cs.Unsubscribe(t.Context(), &mcp.UnsubscribeParams{URI: deep}); err != nil {
 		t.Fatal(err)
+	}
+
+	s.neverLogged(t, token)
+}
+
+func TestARevokedSignInEndsTheListen(t *testing.T) {
+	s := start(t, config{}, nil)
+
+	body := `{"jsonrpc":"2.0","id":7,"method":"subscriptions/listen","params":{"notifications":{"resourcesListChanged":true},` +
+		`"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}}}`
+
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.url+"/mcp", strings.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json, text/event-stream")
+	req.Header.Set("Mcp-Method", "subscriptions/listen")
+	req.Header.Set("Mcp-Protocol-Version", "2026-07-28")
+	req.Header.Set("Authorization", basic("alice", token))
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	lines := bufio.NewScanner(resp.Body)
+
+	// the acknowledgement comes once the listen is open and has taken its first look
+	for lines.Scan() && !strings.Contains(lines.Text(), "subscriptions/acknowledged") {
+	}
+
+	s.fake.Revoke("alice")
+
+	var answer string
+
+	for lines.Scan() {
+		if strings.Contains(lines.Text(), `"id":7`) {
+			answer = lines.Text()
+
+			break
+		}
+	}
+
+	if ctx.Err() != nil {
+		t.Fatal("the listen is still open after the app token was revoked")
+	}
+
+	if !strings.Contains(answer, `"error"`) || !strings.Contains(answer, "sign in again") {
+		t.Errorf("the listen ended with %s", answer)
 	}
 
 	s.neverLogged(t, token)

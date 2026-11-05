@@ -2,6 +2,8 @@ package tools
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"path"
 	"strings"
 	"time"
@@ -32,11 +34,15 @@ type watcher struct {
 	subs    []*subscription
 }
 
+// errSignInGone ends a listen whose sign-in OpenCloud or the provider no longer takes.
+var errSignInGone = errors.New("the sign-in of this listen is no longer taken; sign in again and listen anew")
+
 // watch looks at the root etags of the user's spaces every interval until ctx ends. When one
 // moves it says the resource list changed, if the listen asked for that, and re-lists only the
 // folders whose etag moved on the way to each subscribed document, which it reports as updated
-// when its etag or modification time moved.
-func (t *tools) watch(ctx context.Context, info *auth.TokenInfo, want *mcp.NotificationSubscriptions) {
+// when its etag or modification time moved. A sign-in that is refused ends the listen through
+// end, so the client learns of it instead of waiting for notices that never come.
+func (t *tools) watch(ctx context.Context, end context.CancelCauseFunc, info *auth.TokenInfo, want *mcp.NotificationSubscriptions) {
 	w := &watcher{t: t, info: info, changed: want.ResourcesListChanged, folders: map[string]string{}}
 
 	for _, raw := range want.ResourceSubscriptions {
@@ -49,7 +55,11 @@ func (t *tools) watch(ctx context.Context, info *auth.TokenInfo, want *mcp.Notif
 		return
 	}
 
-	w.look(ctx, false)
+	if err := w.look(ctx, false); err != nil {
+		end(err)
+
+		return
+	}
 
 	tick := time.NewTicker(t.interval)
 	defer tick.Stop()
@@ -59,29 +69,48 @@ func (t *tools) watch(ctx context.Context, info *auth.TokenInfo, want *mcp.Notif
 		case <-ctx.Done():
 			return
 		case <-tick.C:
-			w.look(ctx, true)
+			if err := w.look(ctx, true); err != nil {
+				end(err)
+
+				return
+			}
 		}
 	}
 }
 
-// look compares the spaces with what was seen before; the first look only takes them in.
-func (w *watcher) look(ctx context.Context, tell bool) {
+// look compares the spaces with what was seen before; the first look only takes them in. It
+// fails only on a refused sign-in, which ends the listen; anything else is logged and looked at
+// again on the next tick.
+func (w *watcher) look(ctx context.Context, tell bool) error {
 	c, err := w.t.access(ctx, w.info)
-	if err != nil {
-		w.t.log.Warn("watching the spaces", "err", err)
+	if err == nil {
+		var spaces []opencloud.Space
 
-		return
-	}
+		if spaces, err = c.Spaces(ctx); err == nil {
+			w.compare(ctx, c, spaces, tell)
 
-	spaces, err := c.Spaces(ctx)
-	if err != nil {
-		if ctx.Err() == nil {
-			w.t.log.Warn("watching the spaces", "err", err)
+			return nil
 		}
-
-		return
 	}
 
+	// a listen that ends anyway fails its look, which is no news
+	select {
+	case <-ctx.Done():
+		return nil
+	default:
+	}
+
+	if errors.Is(err, opencloud.ErrRefused) || errors.Is(err, auth.ErrInvalidToken) {
+		return fmt.Errorf("%w: %v", errSignInGone, err)
+	}
+
+	w.t.log.Warn("watching the spaces", "err", err)
+
+	return nil
+}
+
+// compare takes in the spaces of one look and tells what moved.
+func (w *watcher) compare(ctx context.Context, c *opencloud.Client, spaces []opencloud.Space, tell bool) {
 	moved := map[string]opencloud.Space{}
 	roots := map[string]string{}
 
