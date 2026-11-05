@@ -41,8 +41,8 @@ Woodpecker runs the workflows in `.woodpecker/`, with the same mise tasks and to
 - `release`: on main, [ready-release-go][rrg] keeps a `next-release/main` pull request with the
   changelog; merging it tags the release, and the tag builds the binaries with `mise run dist`,
   for Linux, macOS and Windows on amd64 and arm64, and puts them on the GitHub release with
-  their SHA-256 checksums; it runs no tests, everything reaches main through a tested pull
-  request
+  their SHA-256 checksums; a tag runs nothing but this, everything reaches main through a tested
+  pull request
 
 The changelog is made of the pull request titles, grouped by their `Type:*` label
 (`release-config.ts`), so the title is the entry and the label decides the version bump.
