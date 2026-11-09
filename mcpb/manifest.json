@@ -1,0 +1,71 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/mcpb/main/schemas/mcpb-manifest-v0.3.schema.json",
+  "manifest_version": "0.3",
+  "name": "opencloud-mcp",
+  "display_name": "OpenCloud",
+  "version": "@VERSION@",
+  "description": "Your OpenCloud files for the model: read, search, write and share them, always as you.",
+  "long_description": "Connects Claude to [OpenCloud](https://opencloud.eu). The model reads documents (markdown, text, CSV, PDF) and single sections of them, searches with OpenCloud's own search, writes text files, copies, moves and deletes, brings back what is in the trash and earlier versions, shares with people and by links, tags and marks favorites.\n\nEvery request goes to your OpenCloud as you, with your permissions and nothing more. The server keeps no copy of your data.\n\nYou need an app token: in OpenCloud, open your account and create one under *App Tokens*.",
+  "author": {
+    "name": "OpenCloud GmbH",
+    "url": "https://opencloud.eu"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/opencloud-eu/opencloud-mcp"
+  },
+  "homepage": "https://github.com/opencloud-eu/opencloud-mcp",
+  "documentation": "https://github.com/opencloud-eu/opencloud-mcp/blob/main/docs/configuration.md",
+  "support": "https://github.com/opencloud-eu/opencloud-mcp/issues",
+  "license": "Apache-2.0",
+  "keywords": ["opencloud", "files", "documents", "search", "sharing", "webdav"],
+  "server": {
+    "type": "binary",
+    "entry_point": "server/opencloud-mcp",
+    "mcp_config": {
+      "command": "${__dirname}/server/opencloud-mcp",
+      "args": [],
+      "env": {
+        "OPENCLOUD_URL": "${user_config.url}",
+        "OPENCLOUD_USER": "${user_config.user}",
+        "OPENCLOUD_APP_TOKEN": "${user_config.app_token}",
+        "OPENCLOUD_MCP_READ_ONLY": "${user_config.read_only}"
+      },
+      "platform_overrides": {
+        "win32": {
+          "command": "${__dirname}/server/opencloud-mcp.exe"
+        }
+      }
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"]
+  },
+  "user_config": {
+    "url": {
+      "type": "string",
+      "title": "OpenCloud address",
+      "description": "The address you open OpenCloud at, like https://cloud.example.com",
+      "required": true
+    },
+    "user": {
+      "type": "string",
+      "title": "User name",
+      "description": "Your OpenCloud user name, the one the app token belongs to",
+      "required": true
+    },
+    "app_token": {
+      "type": "string",
+      "title": "App token",
+      "description": "In OpenCloud, open your account and create one under App Tokens",
+      "sensitive": true,
+      "required": true
+    },
+    "read_only": {
+      "type": "boolean",
+      "title": "Read only",
+      "description": "Offer only the tools that change nothing",
+      "default": false
+    }
+  }
+}

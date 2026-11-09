@@ -25,11 +25,12 @@ steps:
       HTTPS_PROXY:
         from_secret: ci_http_proxy
       MISE_TRUSTED_CONFIG_PATHS: ${CI_WORKSPACE}
-      # only Go, the task would install golangci-lint too
+      # Go and the tools of the bundle only, auto-install would add golangci-lint
       MISE_TASK_RUN_AUTO_INSTALL: 'false'
     commands:
-      - mise install go
-      - VERSION=$${CI_COMMIT_TAG} mise run dist
+      - mise install go node npm:@anthropic-ai/mcpb
+      # the binaries of dist, and the MCP bundle for Claude Desktop made of them
+      - VERSION=$${CI_COMMIT_TAG} mise run mcpb
     when:
       - event: tag
 

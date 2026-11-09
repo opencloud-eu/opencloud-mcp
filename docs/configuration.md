@@ -49,7 +49,11 @@ stopped before it leaves, so the token cannot be sent anywhere else.
 
 ### Claude Desktop (stdio)
 
-In `claude_desktop_config.json`:
+Open `opencloud-mcp-<version>.mcpb` from the release, an MCP bundle with the binaries for macOS,
+Windows and Linux. Claude Desktop asks for the address, the user, the app token and whether to
+offer only the tools that change nothing; the token goes into the system's keychain.
+
+Or, with the binary, in `claude_desktop_config.json`:
 
 ``` json
 {
