@@ -49,8 +49,8 @@ Woodpecker runs the workflows in `.woodpecker/`, with the same mise tasks and to
 The bundle (`mcpb/`) holds the manifest, the binaries for macOS and Linux on both architectures
 and the Windows amd64 binary, which Windows on ARM runs in emulation: a bundle chooses its
 command by system only, so on macOS and Linux the entry point is a launcher script that starts
-the binary for the machine's architecture. `mise run mcpb` brings Node and the mcpb CLI for this
-task alone.
+the binary for the machine's architecture. Node and the mcpb CLI in `mise.toml` are for the bundle
+only; CI installs just them and Go.
 
 A tag runs only the image and the release, no tests: everything reaches main through a tested
 pull request.

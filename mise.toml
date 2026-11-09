@@ -1,6 +1,9 @@
 [tools]
 go = "1.27.3"
 golangci-lint = "2.15.0"
+# for the MCP bundle only, mise run mcpb
+node = "24.22.1"
+"npm:@anthropic-ai/mcpb" = "2.1.2"
 
 [tasks.build]
 description = "the opencloud-mcp binary in bin/"
@@ -50,8 +53,6 @@ done
 [tasks.mcpb]
 description = "the MCP bundle for Claude Desktop in dist/, one for every platform, from the binaries of dist"
 depends = ["dist"]
-# only this task needs Node and the mcpb CLI
-tools = { node = "24.22.1", "npm:@anthropic-ai/mcpb" = "2.1.2" }
 run = '''
 version=${VERSION:-dev}
 semver=${version#v}
