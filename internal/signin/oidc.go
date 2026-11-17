@@ -30,6 +30,13 @@ type OIDCConfig struct {
 	// exchange a person's token for one with OpenCloud's audience.
 	ClientID     string
 	ClientSecret opencloud.Secret
+	// ExchangeAudience, when set, names OpenCloud in the exchange by RFC 8693's audience, like
+	// OpenCloud's client id at the provider, instead of by the resource. authentik takes only the
+	// audience and refuses a resource with invalid_target.
+	ExchangeAudience string
+	// ExchangeScope, when set, is the scope asked for in the exchange. authentik issues a token
+	// without scopes when none is asked for, and OpenCloud then learns no user name from it.
+	ExchangeScope string
 	// HTTPClient reaches the provider; http.DefaultClient when nil.
 	HTTPClient *http.Client
 }
@@ -132,14 +139,24 @@ const accessToken = "urn:ietf:params:oauth:token-type:access_token" //nolint:gos
 
 // exchange trades a person's access token for one issued for OpenCloud (RFC 8693). It is
 // oauthex.ExchangeToken without the audience beside the resource, which a provider such as Rauthy
-// refuses, and without its demand for issued_token_type, which Rauthy leaves out.
+// refuses, and without its demand for issued_token_type, which Rauthy leaves out. With
+// ExchangeAudience it names OpenCloud by the audience alone, for a provider such as authentik.
 func (o *OIDC) exchange(ctx context.Context, subject opencloud.Secret, opencloudURL string) (opencloud.Secret, time.Time, error) {
 	form := url.Values{
 		"grant_type":           {oauthex.GrantTypeTokenExchange},
 		"requested_token_type": {accessToken},
 		"subject_token":        {subject.Reveal()},
 		"subject_token_type":   {accessToken},
-		"resource":             {opencloudURL},
+	}
+
+	if o.cfg.ExchangeAudience != "" {
+		form.Set("audience", o.cfg.ExchangeAudience)
+	} else {
+		form.Set("resource", opencloudURL)
+	}
+
+	if o.cfg.ExchangeScope != "" {
+		form.Set("scope", o.cfg.ExchangeScope)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, o.tokenURL, strings.NewReader(form.Encode()))

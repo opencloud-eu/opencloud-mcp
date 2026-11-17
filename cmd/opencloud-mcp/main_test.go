@@ -59,6 +59,14 @@ func TestTheConfigurationComesFromFlagsOverTheEnvironment(t *testing.T) {
 	if err != nil || !slices.Equal(cfg.toolsets, []string{"files", "search"}) || !cfg.readOnly {
 		t.Errorf("toolsets %+v %v", cfg, err)
 	}
+
+	e = env(map[string]string{envURL: "https://cloud.example.com", envIssuer: "https://id.example.com/", envResource: "https://mcp.example.com/mcp",
+		envClientID: "mcp", envClientSecret: secret, envExchangeAud: "web", envExchangeScp: "openid profile"})
+
+	cfg, err = configure([]string{"--listen", ":8090", "--oidc-exchange-scope", "openid"}, e, io.Discard)
+	if err != nil || cfg.oidc.ExchangeAudience != "web" || cfg.oidc.ExchangeScope != "openid" {
+		t.Errorf("exchange %+v %v", cfg.oidc, err)
+	}
 }
 
 func TestTheSecretsAreNeverFlags(t *testing.T) {
@@ -77,6 +85,54 @@ func TestTheSecretsAreNeverFlags(t *testing.T) {
 
 	if _, err := configure([]string{"-h"}, e, io.Discard); !errors.Is(err, flag.ErrHelp) {
 		t.Errorf("help: %v", err)
+	}
+}
+
+// trustByAudience is trust for a provider that, like authentik, names OpenCloud by its client id
+// as the audience and refuses a resource.
+func trustByAudience(iss *opencloudtest.Issuer, audience string) func(*opencloudtest.Cloud, string) {
+	return func(fake *opencloudtest.Cloud, _ string) {
+		fake.TrustBearer(iss.Accepts(audience))
+		iss.AllowExchangeByAudience("opencloud-mcp", secret, audience)
+	}
+}
+
+func TestAProviderOfAudiencesExchangesByTheAudience(t *testing.T) {
+	iss := issuer(t)
+	cfg := oidcConfig(iss)
+	cfg.oidc.ExchangeAudience = "web"
+	cfg.oidc.ExchangeScope = "openid profile email"
+	s := start(t, cfg, trustByAudience(iss, "web"))
+
+	access := iss.Token("alice", []string{s.url + "/mcp"}, time.Hour)
+	cs := s.must(t, "Bearer "+access, nil)
+
+	if got, isErr := text(t, cs, "read_file", map[string]any{"space": "Alice", "path": "plain.txt"}); isErr || got != "No headings here." {
+		t.Errorf("read with an access token: %q", got)
+	}
+
+	if iss.Exchanges.Load() == 0 {
+		t.Error("the access token reached OpenCloud without an exchange")
+	}
+
+	if got := iss.Scope(); got != "openid profile email" {
+		t.Errorf("the exchange asked for the scope %q", got)
+	}
+
+	s.neverLogged(t, access, secret)
+}
+
+func TestWithoutTheAudienceAProviderOfAudiencesRefuses(t *testing.T) {
+	iss := issuer(t)
+	s := start(t, oidcConfig(iss), trustByAudience(iss, "web"))
+
+	access := iss.Token("alice", []string{s.url + "/mcp"}, time.Hour)
+	if resp := s.post(t, "Bearer "+access, "server/discover"); resp.StatusCode != http.StatusUnauthorized {
+		t.Errorf("an exchange by resource against a provider of audiences: %d", resp.StatusCode)
+	}
+
+	if iss.Exchanges.Load() != 0 {
+		t.Error("a provider of audiences exchanged a token named by the resource")
 	}
 }
 
@@ -110,6 +166,7 @@ func TestAMissingOrClashingSettingIsNamed(t *testing.T) {
 		{nil, with(map[string]string{envUser: "alice", envToken: token}, map[string]string{envReadOnly: "mostly"}), `OPENCLOUD_MCP_READ_ONLY is "mostly"`},
 		{[]string{"--listen", ":0"}, with(oidc, map[string]string{envUser: "alice", envToken: token}), "OpenID Connect is for HTTP without a configured user"},
 		{[]string{"--listen", ":0"}, with(oidc, map[string]string{envClientSecret: ""}), "needs all of"},
+		{[]string{"--listen", ":0", "--oidc-exchange-audience", "web"}, with(nil, nil), "needs all of"},
 		{[]string{"--listen", ":8090"}, with(nil, map[string]string{envUser: "alice", envToken: token}), "loopback only, not :8090"},
 		{[]string{"--listen", "0.0.0.0:8090"}, with(nil, map[string]string{envUser: "alice", envToken: token}), "loopback only"},
 		{[]string{"--listen", "cloud.example.com:8090"}, with(nil, map[string]string{envUser: "alice", envToken: token}), "loopback only"},

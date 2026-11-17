@@ -32,9 +32,30 @@ type Issuer struct {
 
 	mu                     sync.Mutex
 	client, secret, target string
+	// byAudience answers like authentik: the target is named by the audience, a resource is refused
+	byAudience bool
+	scope      string
 
 	// Exchanges counts the token exchanges answered with a token.
 	Exchanges atomic.Int64
+}
+
+// AllowExchangeByAudience lets the client with secret exchange a token for one with the audience
+// target, named the way authentik takes it: by the audience parameter, a resource refused with
+// invalid_target.
+func (iss *Issuer) AllowExchangeByAudience(client, secret, target string) {
+	iss.mu.Lock()
+	defer iss.mu.Unlock()
+
+	iss.client, iss.secret, iss.target, iss.byAudience = client, secret, target, true
+}
+
+// Scope is the scope the last answered exchange asked for.
+func (iss *Issuer) Scope() string {
+	iss.mu.Lock()
+	defer iss.mu.Unlock()
+
+	return iss.scope
 }
 
 // StartIssuer is an issuer serving on a loopback address until Close.
@@ -129,7 +150,7 @@ func (iss *Issuer) exchange(w http.ResponseWriter, r *http.Request) {
 	}
 
 	iss.mu.Lock()
-	allowed, target := iss.client != "" && client == iss.client && secret == iss.secret, iss.target
+	allowed, target, byAudience := iss.client != "" && client == iss.client && secret == iss.secret, iss.target, iss.byAudience
 	iss.mu.Unlock()
 
 	switch {
@@ -137,6 +158,16 @@ func (iss *Issuer) exchange(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusUnauthorized, map[string]string{keyError: "invalid_client"})
 
 		return
+	case byAudience && r.PostForm.Has("resource"):
+		// authentik: "Resource indicators are not supported"
+		refuse("invalid_target", "")
+
+		return
+	case byAudience && r.PostForm.Get("audience") != target:
+		refuse("invalid_target", "")
+
+		return
+	case byAudience:
 	case r.PostForm.Has("code"):
 		// Rauthy validates a code wherever it is sent, an empty one too
 		refuse("BadRequest", "Payload validation error: code")
@@ -158,6 +189,10 @@ func (iss *Issuer) exchange(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+	iss.mu.Lock()
+	iss.scope = r.PostForm.Get("scope")
+	iss.mu.Unlock()
 
 	iss.Exchanges.Add(1)
 	writeJSON(w, http.StatusOK, map[string]any{

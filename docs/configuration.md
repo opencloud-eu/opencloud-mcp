@@ -11,6 +11,8 @@
 | `--resource`       | `OPENCLOUD_MCP_RESOURCE`           | this server's MCP endpoint as clients reach it, like `https://mcp.example.com/mcp` |
 | `--oidc-client-id` | `OPENCLOUD_MCP_OIDC_CLIENT_ID`     | this server's confidential client at the provider, for the token exchange       |
 |                    | `OPENCLOUD_MCP_OIDC_CLIENT_SECRET` | that client's secret; read from the environment only, never a flag               |
+| `--oidc-exchange-audience` | `OPENCLOUD_MCP_OIDC_EXCHANGE_AUDIENCE` | name OpenCloud in the exchange by this audience instead of its address as the resource, for a provider such as authentik; see [Sign-in](sign-in.md#authentik) |
+| `--oidc-exchange-scope` | `OPENCLOUD_MCP_OIDC_EXCHANGE_SCOPE` | the scope asked for in the exchange, space separated; none by default |
 | `--watch-interval` | `OPENCLOUD_MCP_WATCH_INTERVAL`     | how often an open subscription looks for changes, `5s` by default                |
 | `--toolsets`       | `OPENCLOUD_MCP_TOOLSETS`           | the groups of tools to offer, comma separated, all by default; see [Tools](tools.md) |
 | `--read-only`      | `OPENCLOUD_MCP_READ_ONLY`          | offer only the tools that change nothing                                         |

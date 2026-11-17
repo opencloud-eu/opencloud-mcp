@@ -43,6 +43,8 @@ const (
 	envResource     = "OPENCLOUD_MCP_RESOURCE"
 	envClientID     = "OPENCLOUD_MCP_OIDC_CLIENT_ID"
 	envClientSecret = "OPENCLOUD_MCP_OIDC_CLIENT_SECRET" //nolint:gosec // the variable's name, not a credential
+	envExchangeAud  = "OPENCLOUD_MCP_OIDC_EXCHANGE_AUDIENCE"
+	envExchangeScp  = "OPENCLOUD_MCP_OIDC_EXCHANGE_SCOPE"
 	envInterval     = "OPENCLOUD_MCP_WATCH_INTERVAL"
 	envToolsets     = "OPENCLOUD_MCP_TOOLSETS"
 	envReadOnly     = "OPENCLOUD_MCP_READ_ONLY"
@@ -122,6 +124,8 @@ func configure(args []string, getenv func(string) string, out io.Writer) (config
 	fs.StringVar(&cfg.oidc.Issuer, "oidc-issuer", getenv(envIssuer), "the OpenID Connect provider people sign in at, as its discovery names it (env "+envIssuer+")")
 	fs.StringVar(&cfg.oidc.Resource, "resource", getenv(envResource), "this server's MCP endpoint as clients reach it, like https://mcp.example.com/mcp (env "+envResource+")")
 	fs.StringVar(&cfg.oidc.ClientID, "oidc-client-id", getenv(envClientID), "this server's client at the provider, for the token exchange (env "+envClientID+")")
+	fs.StringVar(&cfg.oidc.ExchangeAudience, "oidc-exchange-audience", getenv(envExchangeAud), "name OpenCloud in the token exchange by this audience instead of its address as the resource, for a provider such as authentik (env "+envExchangeAud+")")
+	fs.StringVar(&cfg.oidc.ExchangeScope, "oidc-exchange-scope", getenv(envExchangeScp), "the scope to ask for in the token exchange, space separated, like \"openid profile email\" (env "+envExchangeScp+")")
 	fs.DurationVar(&cfg.interval, "watch-interval", interval, "how often an open subscription looks at the spaces for changes (env "+envInterval+")")
 	fs.StringVar(&toolsets, "toolsets", getenv(envToolsets), "the groups of tools to offer, comma separated, all when empty: "+strings.Join(tools.Toolsets, ", ")+" (env "+envToolsets+")")
 	fs.BoolVar(&cfg.readOnly, "read-only", readOnly, "offer only the tools that change nothing (env "+envReadOnly+")")
@@ -162,7 +166,8 @@ func configure(args []string, getenv func(string) string, out io.Writer) (config
 }
 
 func check(cfg config) error {
-	oidc := cfg.oidc.Issuer != "" || cfg.oidc.Resource != "" || cfg.oidc.ClientID != "" || cfg.oidc.ClientSecret != ""
+	oidc := cfg.oidc.Issuer != "" || cfg.oidc.Resource != "" || cfg.oidc.ClientID != "" || cfg.oidc.ClientSecret != "" ||
+		cfg.oidc.ExchangeAudience != "" || cfg.oidc.ExchangeScope != ""
 
 	switch {
 	case cfg.cloud.URL == "":

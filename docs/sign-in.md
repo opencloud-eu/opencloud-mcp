@@ -76,3 +76,21 @@ server:
 - registration: dynamic registration through the Client Registration policies of anonymous
   access (Trusted Hosts, Allowed Client Scopes), or client ID metadata documents with
   `--features=cimd` and a client policy with the `client-id-metadata-document` executor.
+
+### authentik
+
+From authentik 2026.8's token exchange (`authentik/providers/oauth2/token/token_exchange.py`):
+
+- authentik takes the target of an exchange only as `audience`, the client id of OpenCloud's
+  provider, and refuses `resource` with `invalid_target`: set `--oidc-exchange-audience` to that
+  client id.
+- without `scope` the exchanged token carries none, and OpenCloud then learns no user name from
+  the userinfo endpoint: set `--oidc-exchange-scope` to what OpenCloud's provider maps, like
+  `openid profile email`.
+- the MCP clients' token: authentik sets `aud` to the client id, so the MCP clients' provider
+  takes `--resource` as its client id. authentik has no dynamic registration; the MCP client is
+  configured with that client id and its secret.
+- this server's client: a confidential provider with the token exchange grant, bound to an
+  application, with the MCP clients' provider among its federated OAuth2/OpenID providers.
+- OpenCloud's provider lists this server's provider among its federated providers, which lets it
+  mint tokens for OpenCloud; the user must pass OpenCloud's application policies too.
